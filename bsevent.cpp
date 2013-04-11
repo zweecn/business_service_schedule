@@ -6,8 +6,16 @@ BSEvent::BSEvent()
 
 QString BSEvent::toString()
 {
-    QString res = QString("Event: time:%1 type:%2 %3").arg(this->time)
-            .arg(this->eventType)
-            .arg("");
+    QString res = QString("[Event: Time:%1 ")
+            .arg(this->time);
+    if (this->eventType == BSEvent::REQUIREMENT_CANCEL_E1)
+    {
+        res += QString("Type:%1 Ins:%2 ReqVLevel:%3")
+                .arg("REQUIREMENT_CANCEL_E1")
+                .arg(this->e1Info.instanceID)
+                .arg(this->e1Info.reqVLevel);
+    }
+
+    res = res.trimmed().append("]");
     return res;
 }
