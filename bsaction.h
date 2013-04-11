@@ -31,19 +31,6 @@ public:
     IgnoreInfo ignoreInfo;
     ForkInfo forkInfo;
 
-
-//    int faultInstanceID;
-//    int faultSID;
-//    int newRequirementID;
-//    int instanceFork;
-//    int period;
-//    BSResourceAmountAdd resourceAmountAdd;
-//    BSResourceAmountTrans resourceAmountTrans;
-//    int cancelIID;
-//    int delayIID;
-//    int retrySID;
-
-
     enum
     {
         IGNORE,
