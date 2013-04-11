@@ -11,7 +11,7 @@ BSAlgorithm::BSAlgorithm()
 BSAction BSAlgorithm::schedule(const BSEvent &event)
 {
     BSAction action;
-    if (event.eventType == BSEvent::REQUIREMENT_CANCEL_E1)
+    if (event.eventType == BSEvent::REQUIREMENT_CANCEL_REDUCE_E1)
     {
         return subScheduleE1(event);
     }

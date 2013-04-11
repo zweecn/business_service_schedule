@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 
     BSAlgorithm alg;
     BSEvent event;
-    event.eventType = BSEvent::REQUIREMENT_CANCEL_E1;
+    event.eventType = BSEvent::REQUIREMENT_CANCEL_REDUCE_E1;
     event.time = 1;
     event.e1Info.instanceID = 2;
     event.e1Info.reqVLevel = 1;
