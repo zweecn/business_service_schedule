@@ -242,6 +242,25 @@ bool BSWorkFlow::readBSInstanceList()
         return false;
     }
 
+    for (i = 0; i < bsInstanceList.size(); i++)
+    {
+        BSRequirement & req = bsRequirementQueue[bsInstanceList[i].requirementID];
+        for (int j = 0; j < bsSNodeList.size(); j++)
+        {
+            int resType = bsSNodeList[j].resType;
+            int unitQLevel = bsSNodeList[j].unitReqQLevel;
+            int resTotalAmount = unitQLevel * req.qLevel;
+            for (int k = 0; k < bsResourceList.size(); k++)
+            {
+                if (bsResourceList[k].resType == resType)
+                {
+                    bsResourceList[k].totalQLevel -= resTotalAmount;
+                    break;
+                }
+            }
+        }
+    }
+
     qDebug() << "BSWorkFlow::readBSResourceList() finised.";
     return true;
 }

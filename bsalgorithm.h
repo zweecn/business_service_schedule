@@ -13,7 +13,10 @@ public:
 
 private:
     BSAction subScheduleE1(const BSEvent & event);
-    BSAction forkNewInstance(int currInstanceID, int freeReqVLevel);
+    BSAction subScheduleE2(const BSEvent & event);
+    BSAction forkNewInstance(int time, int currInstanceID, int freeReqVLevel);
+    BSAction forkNewInstance(int time, int currInstanceID, int addReqVLevel, int extraWTP);
+    BSAction addResource(int addReqVLevel, int extraWTP);
 
 };
 

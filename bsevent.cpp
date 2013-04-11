@@ -15,6 +15,13 @@ QString BSEvent::toString()
                 .arg(this->e1Info.instanceID)
                 .arg(this->e1Info.reqVLevel);
     }
+    else if (this->eventType == BSEvent::REQUIREMENT_ADD_E2)
+    {
+        res += QString("Type:%1 Ins:%2 ReqVLevel:%3")
+                .arg("REQUIREMENT_ADD_E2")
+                .arg(this->e1Info.instanceID)
+                .arg(this->e1Info.reqVLevel);
+    }
 
     res = res.trimmed().append("]");
     return res;

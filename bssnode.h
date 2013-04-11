@@ -14,6 +14,12 @@ public:
     int resType;
     int unitReqQLevel;
     int concurrencyType;
+
+    enum
+    {
+        INDEPENDENT_NODE = 0,
+        SYNC_NODE = 1
+    };
 };
 
 #endif // BSSNODE_H

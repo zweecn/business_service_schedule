@@ -15,6 +15,7 @@ struct E2Info
 {
     int instanceID;
     int reqVLevel;
+    int extraWTP;
 };
 
 // New requirement
@@ -55,7 +56,8 @@ public:
     enum
     {
         NOT_EVENT,
-        REQUIREMENT_CANCEL_REDUCE_E1
+        REQUIREMENT_CANCEL_REDUCE_E1,
+        REQUIREMENT_ADD_E2
     };
 };
 
