@@ -2,6 +2,8 @@
 
 BSEvent::BSEvent()
 {
+    time = -1;
+    eventType = BSEvent::NOT_EVENT;
 }
 
 QString BSEvent::toString()

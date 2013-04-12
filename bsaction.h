@@ -35,6 +35,7 @@ struct ResourceTransNode
 struct ResourceTransInfo
 {
     QList<ResourceTransNode> resourceTransList;
+    QList<ResourceAddNode> resourceAddList;
 };
 
 class BSAction

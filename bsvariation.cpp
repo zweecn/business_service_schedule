@@ -3,7 +3,7 @@
 
 BSVariation::BSVariation()
 {
-    instanceID = reqVLevel = newReq = resType = vQlevel = sNodeID = timeDelay = 0;
+    instanceID = reqVLevel = newReq = resType = vQlevel = sNodeID = timeDelay = -1;
 }
 
 QString BSVariation::toString()

@@ -2,6 +2,10 @@
 
 BSRequirement::BSRequirement()
 {
+    customer = -1;
+    qLevel = -1;
+    expectedPeriod = -1;
+    wtp = -1;
 }
 
 QString BSRequirement::toString()

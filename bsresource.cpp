@@ -2,6 +2,10 @@
 
 BSResource::BSResource()
 {
+    period = -1;
+    resType = -1;
+    totalQLevel = -1;
+    price = -1;
 }
 
 QString BSResource::toString()

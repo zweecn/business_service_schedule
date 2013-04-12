@@ -3,24 +3,11 @@
 #include <QDebug>
 #include <qmath.h>
 #include <iostream>
+#include <cassert>
 
 #include "bsalgorithm.h"
 #include "bsworkflow.h"
 #include "bsconfig.h"
-
-struct InsWtpSta
-{
-    int instanceID;
-    int qLevel;
-    int standardPrice;
-    int extraWTP;
-    double val;
-    bool operator < (const InsWtpSta & other) const
-    {
-//        return this->val < other.val;
-        return this->standardPrice + this->extraWTP < other.standardPrice + other.extraWTP;
-    }
-};
 
 BSAlgorithm::BSAlgorithm()
 {
@@ -28,110 +15,97 @@ BSAlgorithm::BSAlgorithm()
 
 BSAction BSAlgorithm::schedule(const BSEvent &event)
 {
-    BSAction action;
+    QList<BSAction> actions;
     if (event.eventType == BSEvent::REQUIREMENT_CANCEL_REDUCE_E1)
     {
-        return subScheduleE1(event);
+        actions = subScheduleE1(event);
     }
     else if (event.eventType == BSEvent::REQUIREMENT_ADD_E2)
     {
-        return subScheduleE2(event);
+        actions = subScheduleE2(event);
     }
 
-    return action;
+    int maxReward = - INT_MAX;
+    int chouse = -1;
+    for (int i = 0; i < actions.size(); i++)
+    {
+        if (maxReward < actions[i].reward)
+        {
+            maxReward = actions[i].reward;
+            chouse = i;
+        }
+        qDebug() << actions[i].toString();
+    }
+
+    if (!(chouse >= 0 && chouse < actions.size()))
+    {
+        BSAction action;
+        return action;
+    }
+    return actions[chouse];
 }
 
-BSAction BSAlgorithm::subScheduleE1(const BSEvent &event)
+QList<BSAction> BSAlgorithm::subScheduleE1(const BSEvent &event)
 {
+    QList<BSAction> actions;
     BSAction ignoreAction;
     // [1] 当前顾客取消的赔偿
     ignoreAction.reward = BSConfig::Instance()->getUnitCompensatePrice()
             * event.e1Info.reqVLevel;
     // [2] 当前顾客取消无法获得标准价格
     ignoreAction.reward -= event.e1Info.reqVLevel * BSConfig::Instance()->getUnitRPrice();
+    actions.append(ignoreAction);
 
     BSAction forkAction = forkNewInstance(event.time, event.e1Info.instanceID, event.e1Info.reqVLevel);
+    actions.append(forkAction);
 
-    if (ignoreAction.reward >= forkAction.reward)
-    {
-        return ignoreAction;
-    }
-    return forkAction;
+    return actions;
 }
 
-BSAction BSAlgorithm::subScheduleE2(const BSEvent &event)
+QList<BSAction> BSAlgorithm::subScheduleE2(const BSEvent &event)
 {
-    BSAction actions[4];
-    actions[0].reward = 0;
-    actions[0].aType = BSAction::IGNORE;
+    QList<BSAction> actions;
 
-    actions[1] = addResource(event.e2Info.reqVLevel, event.e2Info.extraWTP);
+    BSAction action1;
+    action1.reward = 0;
+    action1.aType = BSAction::IGNORE;
+    actions.append(action1);
 
-    actions[2] = forkNewInstance(event.time, event.e2Info.instanceID,
+    BSAction action2 = addResource(event.e2Info.reqVLevel, event.e2Info.extraWTP);
+    actions.append(action2);
+
+    BSAction action3 = forkNewInstance(event.time, event.e2Info.instanceID,
                                  event.e2Info.reqVLevel, event.e2Info.extraWTP);
+    actions.append(action3);
 
-    actions[3] = transResource(event.e2Info.reqVLevel, event.e2Info.extraWTP);
 
-    int maxReward = -INT_MAX;
-    int resAction = 0;
-    for (int i = 0; i < 4; i++)
-    {
-        if (maxReward < actions[i].reward)
-        {
-            maxReward = actions[i].reward;
-            resAction = i;
-        }
-    }
+    BSAction action4 = transResource(event.e2Info.reqVLevel, event.e2Info.extraWTP);
+    actions.append(action4);
 
-    return actions[resAction];
+    return actions;
 }
 
 BSAction BSAlgorithm::addResource(int addReqVLevel, int extraWTP)
 {
-    BSAction resAddAction;
-    resAddAction.aType = BSAction::RESOURCE_ADD_PLAN;
-
-    QList<BSSNode> & sNodeList = BSWorkFlow::Instance()->bsSNodeList;
-    QList<BSResource> & freeResourceList = BSWorkFlow::Instance()->bsResourceList;
-    int totalResPrice = 0;
-    for (int i = 0; i < sNodeList.size(); i++)
+    BSAction action;
+    action.aType = BSAction::RESOURCE_ADD_PLAN;
+    int totalResPrice = addResourceTotalPrice(addReqVLevel, action.resourceAddInfo);
+    if (totalResPrice != -1)
     {
-        int totalQLevel = sNodeList[i].unitReqQLevel * addReqVLevel;
-        BSResource* res = NULL;
-        for (int j = 0; j < freeResourceList.size(); j++)
-        {
-            if (freeResourceList[j].resType == sNodeList[i].resType
-                    && freeResourceList[j].totalQLevel >= totalQLevel
-                    && freeResourceList[j].period == 0)
-            {
-                res = &freeResourceList[j];
-            }
-        }
-        if (res != NULL)
-        {
-            ResourceAddNode node;
-            node.resourceType = sNodeList[i].resType;
-            node.amount = totalQLevel;
-            resAddAction.resourceAddInfo.resourceAddList.append(node);
-            totalResPrice += totalQLevel * res->price;
-        }
-    }
-    if (resAddAction.resourceAddInfo.resourceAddList.size() != sNodeList.size())
-    {
-        resAddAction.resourceAddInfo.resourceAddList.clear();
-        resAddAction.reward = - INT_MAX;
-        qDebug() << "BSAlgorithm::addResource: Resource is not enough for the new requirement.";
+        // [1] 标准费用
+        action.reward = BSConfig::Instance()->getUnitRPrice() * addReqVLevel;
+        // [2] 用户需要增加新的需求所愿意额外付出的费用
+        action.reward += extraWTP;
+        // [3] 新的需求花费的资源成本
+        action.reward -= totalResPrice;
     }
     else
     {
-        // [1] 标准费用
-        resAddAction.reward = BSConfig::Instance()->getUnitRPrice() * addReqVLevel;
-        // [2] 用户需要增加新的需求所愿意额外付出的费用
-        resAddAction.reward += extraWTP;
-        // [3] 新的需求花费的资源成本
-        resAddAction.reward -= totalResPrice;
+        action.resourceAddInfo.resourceAddList.clear();
+        action.reward = - INT_MAX;
+        qDebug() << "BSAlgorithm::addResource: Resource is not enough for the new requirement.";
     }
-    return resAddAction;
+    return action;
 }
 
 BSAction BSAlgorithm::transResource(int addReqVLevel, int extraWTP)
@@ -197,12 +171,35 @@ BSAction BSAlgorithm::transResource(int addReqVLevel, int extraWTP)
     // [*] 转移资源所得到新收入=新需求所带来的标准收入+新需求的额外支付-这个动作带来的成本消耗
     // 从这里可以看到新的需求想要满足把其他的实例取消来满足的话，首先付的钱要足够赔付人家，才能执行这个动作
     action.reward = BSConfig::Instance()->getUnitRPrice() * addReqVLevel + extraWTP - minCost;
+    int satisfyReq = 0;
     for (int i = 0; i < minChouse.size(); i++)
     {
         ResourceTransNode node;
         node.instanceID = i;
         node.qLevel = BSWorkFlow::Instance()->getRequirementQLevel(i);
         action.resourceTransInfo.resourceTransList.append(node);
+        satisfyReq += node.qLevel;
+    }
+    // 从候选资源里选择不够的
+    if (addReqVLevel - satisfyReq > 0)
+    {
+        for (int i = 0; i < sNodeList.size(); i++)
+        {
+
+            ResourceAddNode node;
+            node.resourceType = sNodeList[i].resType;
+            node.amount = sNodeList[i].unitReqQLevel * (addReqVLevel - satisfyReq);
+            if (node.amount <= BSWorkFlow::Instance()->getTotalQLevel(0, node.resourceType))
+            {
+                action.resourceTransInfo.resourceAddList.append(node);
+            }
+            else
+            {
+                qDebug() << "BSAlgorithm::transResource: Resource is not enough for the new requirement.";
+                action.reward = - INT_MAX;
+                break;
+            }
+        }
     }
 
     return action;
@@ -293,42 +290,73 @@ BSAction BSAlgorithm::forkNewInstance(int time, int currInstanceID, int addReqVL
     req.qLevel = addReqVLevel;
     req.wtp = extraWTP;
 
-    int resNodeCount = 0;
-    int totalResPrice = 0;
-    for (int i = 0; i < sNodeList.size(); i++)
-    {
-        int resType = BSWorkFlow::Instance()->bsSNodeList[i].resType;
-        QList<BSResource> & resList = BSWorkFlow::Instance()->bsResourceList;
-        for (int j = 0; j < resList.size(); j++)
-        {
-            if (resList[j].totalQLevel >= sNodeList[i].unitReqQLevel * addReqVLevel
-                    && resList[j].resType == resType && resList[j].period == 0)
-            {
-                resNodeCount++;
-                totalResPrice += resList[j].price * addReqVLevel;
-            }
-        }
-    }
-    if (resNodeCount == sNodeList.size())
+    int totalResPrice = addResourceTotalPrice(addReqVLevel);
+    if (totalResPrice != -1)
     {
         action.aType = BSAction::FORK_INSTANCE;
         action.forkInfo.requirementID = req.customer;
         action.forkInfo.instance.instanceID = BSWorkFlow::Instance()->bsInstanceList.size();
         action.forkInfo.instance.requirementID = req.customer;
         action.forkInfo.instance.sNodePlanList = ins.sNodePlanList;
-        // [1] fork出来后新的额外支付的价格
-        action.reward = extraWTP;
-        // [2] 新的需求的标准价格
-        action.reward += addReqVLevel * BSConfig::Instance()->getUnitRPrice();
+
+        // [1] 标准费用
+        action.reward = BSConfig::Instance()->getUnitRPrice() * addReqVLevel;
+        // [2] 用户需要增加新的需求所愿意额外付出的费用
+        action.reward += extraWTP;
         // [3] 新的需求花费的资源成本
         action.reward -= totalResPrice;
     }
     else
     {
+        qDebug() << "BSAlgorithm::forkNewInstance: Resource is not enough for the new requirement.";
         action.reward = -INT_MAX;
     }
 
     return action;
+}
+
+int BSAlgorithm::addResourceTotalPrice(int addReqVLevel)
+{
+    int sumPrice = 0;
+    QList<BSSNode> & sNodeList = BSWorkFlow::Instance()->bsSNodeList;
+    for (int i = 0; i < sNodeList.size(); i++)
+    {
+        if (BSWorkFlow::Instance()->getTotalQLevel(0, sNodeList[i].resType)
+                >= addReqVLevel * sNodeList[i].unitReqQLevel)
+        {
+            sumPrice += BSWorkFlow::Instance()->getResourcePrice(0, sNodeList[i].resType)
+                    * sNodeList[i].unitReqQLevel * addReqVLevel;
+        }
+        else
+        {
+            return -1;
+        }
+    }
+    return sumPrice;
+}
+
+int BSAlgorithm::addResourceTotalPrice(int addReqVLevel, ResourceAddInfo & addInfo)
+{
+    int sumPrice = 0;
+    QList<BSSNode> & sNodeList = BSWorkFlow::Instance()->bsSNodeList;
+    for (int i = 0; i < sNodeList.size(); i++)
+    {
+        if (BSWorkFlow::Instance()->getTotalQLevel(0, sNodeList[i].resType)
+                >= addReqVLevel * sNodeList[i].unitReqQLevel)
+        {
+            sumPrice += BSWorkFlow::Instance()->getResourcePrice(0, sNodeList[i].resType)
+                    * sNodeList[i].unitReqQLevel * addReqVLevel;
+            ResourceAddNode node;
+            node.resourceType = sNodeList[i].resType;
+            node.amount = addReqVLevel * sNodeList[i].unitReqQLevel;
+            addInfo.resourceAddList.append(node);
+        }
+        else
+        {
+            return -1;
+        }
+    }
+    return sumPrice;
 }
 
 QList<int> BSAlgorithm::isOne(int num)

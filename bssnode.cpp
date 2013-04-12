@@ -2,6 +2,10 @@
 
 BSSNode::BSSNode()
 {
+    sid = -1;
+    resType = -1;
+    unitReqQLevel = -1;
+    concurrencyType = -1;
 }
 
 QString BSSNode::toString()

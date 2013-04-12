@@ -37,11 +37,11 @@ int main(int argc, char *argv[])
     event.time = 1;
     event.e2Info.instanceID = 2;
     event.e2Info.reqVLevel = 2;
-    event.e2Info.extraWTP = 200;
+    event.e2Info.extraWTP = 3000;
     BSAction action = alg.schedule(event);
 
-    qDebug() << event.toString();
-    qDebug() << action.toString();
+//    qDebug() << event.toString();
+//    qDebug() << action.toString();
 
 
     return 0;

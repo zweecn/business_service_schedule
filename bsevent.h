@@ -55,7 +55,7 @@ public:
 
     enum
     {
-        NOT_EVENT,
+        NOT_EVENT = -1,
         REQUIREMENT_CANCEL_REDUCE_E1,
         REQUIREMENT_ADD_E2
     };

@@ -16,11 +16,22 @@ QString BSAction::toString()
     {
         res += QString(" Type:%1").arg("IGNORE");
     }
-    if (this->aType == BSAction::FORK_INSTANCE)
+    else if (this->aType == BSAction::FORK_INSTANCE)
     {
         res += QString(" Type:%1 Ins:%2")
                 .arg("FORK_INSTANCE")
                 .arg(this->forkInfo.instance.toString());
+    }
+    else if (this->aType == BSAction::RESOURCE_ADD_PLAN)
+    {
+        res += QString(" Type:%1 ")
+                .arg("RESOURCE_ADD_PLAN");
+        for (int i = 0; i < resourceAddInfo.resourceAddList.size(); i++)
+        {
+            res += QString("Res:%1 Amt:%2 ")
+                    .arg(resourceAddInfo.resourceAddList[i].resourceType)
+                    .arg(resourceAddInfo.resourceAddList[i].amount);
+        }
     }
     res += QString(" Reward:%2]").arg(this->reward);
     return res;

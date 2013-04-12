@@ -2,6 +2,9 @@
 
 BSSNodePlan::BSSNodePlan()
 {
+    snodeID = -1;
+    startTime = -1;
+    endTime = -1;
 }
 
 QString BSSNodePlan::toString()
