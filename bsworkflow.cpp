@@ -336,3 +336,15 @@ int BSWorkFlow::getRequirementQLevel(int instanceID)
     }
     return -1;
 }
+
+int BSWorkFlow::getRequirementWTP(int instanceID)
+{
+    for (int i = 0; i < bsRequirementQueue.size(); i++)
+    {
+        if (bsRequirementQueue[i].customer == bsInstanceList[instanceID].requirementID)
+        {
+            return bsRequirementQueue[i].wtp;
+        }
+    }
+    return -1;
+}

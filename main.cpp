@@ -36,8 +36,8 @@ int main(int argc, char *argv[])
     event.eventType = BSEvent::REQUIREMENT_ADD_E2;
     event.time = 1;
     event.e2Info.instanceID = 2;
-    event.e2Info.reqVLevel = 2;
-    event.e2Info.extraWTP = 3000;
+    event.e2Info.reqVLevel = 1;
+    event.e2Info.extraWTP = 2000;
     BSAction action = alg.schedule(event);
 
 //    qDebug() << event.toString();

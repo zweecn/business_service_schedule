@@ -126,16 +126,17 @@ BSAction BSAlgorithm::transResource(int addReqVLevel, int extraWTP)
         int sumCost = 0;
         for (int j = 0; j < chouseInsList.size(); j++)
         {
-            BSInstance & chouseInsTmp = ins[chouseInsList[j]];
-            BSRequirement & reqTmp = BSWorkFlow::Instance()->bsRequirementQueue[chouseInsTmp.requirementID];
+            int instanceID = chouseInsList[j];
             // [1] 损失标准价格
-            int stadPrice = reqTmp.qLevel * BSConfig::Instance()->getUnitRPrice();
+            int standardCost = BSConfig::Instance()->getUnitRPrice()
+                    * BSWorkFlow::Instance()->getRequirementQLevel(instanceID);
             // [2] 损失原来的额外收益wtp
-            int wtpTmp = reqTmp.wtp;
+            int extraWTPCost = BSWorkFlow::Instance()->getRequirementWTP(instanceID);
             // [3] 取消需求需要赔偿
-            int punish = reqTmp.qLevel * BSConfig::Instance()->getUnitRCancelCost();
-            sumQLevel += reqTmp.qLevel;
-            sumCost += stadPrice + wtpTmp + punish;
+            int reparationCost = BSConfig::Instance()->getUnitRCancelCost()
+                    * BSWorkFlow::Instance()->getRequirementQLevel(instanceID);
+            sumQLevel += BSWorkFlow::Instance()->getRequirementQLevel(instanceID);
+            sumCost += standardCost + extraWTPCost + reparationCost;
         }
 
         int candiReqVLevel = addReqVLevel - sumQLevel;
@@ -174,9 +175,10 @@ BSAction BSAlgorithm::transResource(int addReqVLevel, int extraWTP)
     int satisfyReq = 0;
     for (int i = 0; i < minChouse.size(); i++)
     {
+        int instanceID = minChouse[i];
         ResourceTransNode node;
-        node.instanceID = i;
-        node.qLevel = BSWorkFlow::Instance()->getRequirementQLevel(i);
+        node.instanceID = instanceID;
+        node.qLevel = BSWorkFlow::Instance()->getRequirementQLevel(instanceID);
         action.resourceTransInfo.resourceTransList.append(node);
         satisfyReq += node.qLevel;
     }

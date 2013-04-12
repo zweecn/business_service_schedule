@@ -18,6 +18,7 @@ public:
     int getResourcePrice(int period, int resType);
     int getTotalQLevel(int peroid, int resType);
     int getRequirementQLevel(int instanceID);
+    int getRequirementWTP(int instanceID);
 
     void showInstanceList();
     void showRequirementQueue();

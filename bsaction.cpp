@@ -33,6 +33,23 @@ QString BSAction::toString()
                     .arg(resourceAddInfo.resourceAddList[i].amount);
         }
     }
+    else if (this->aType == BSAction::RESOURCE_TRANS_PLAN)
+    {
+        res += QString(" Type:%1 ")
+                .arg("RESOURCE_TRANS_PLAN");
+        for (int i = 0; i < resourceTransInfo.resourceTransList.size(); i++)
+        {
+            res += QString("Ins:%1 QLevel:%2 ")
+                    .arg(resourceTransInfo.resourceTransList[i].instanceID)
+                    .arg(resourceTransInfo.resourceTransList[i].qLevel);
+        }
+        for (int i = 0; i < resourceTransInfo.resourceAddList.size(); i++)
+        {
+            res += QString("Res:%1 Amt:%2 ")
+                    .arg(resourceTransInfo.resourceAddList[i].resourceType)
+                    .arg(resourceTransInfo.resourceAddList[i].amount);
+        }
+    }
     res += QString(" Reward:%2]").arg(this->reward);
     return res;
 }
