@@ -15,6 +15,9 @@ class BSWorkFlow
 public:
     static BSWorkFlow * Instance();
 
+    int getResourcePrice(int period, int resType);
+    int getTotalQLevel(int peroid, int resType);
+
     void showInstanceList();
     void showRequirementQueue();
     void showSNodeList();

@@ -26,6 +26,17 @@ struct ResourceAddInfo
     QList<ResourceAddNode> resourceAddList;
 };
 
+struct ResourceTransNode
+{
+    int instanceID;
+    int qLevel;
+};
+
+struct ResourceTransInfo
+{
+    QList<ResourceTransNode> resourceTransList;
+};
+
 class BSAction
 {
 public:
@@ -40,12 +51,14 @@ public:
     IgnoreInfo ignoreInfo;
     ForkInfo forkInfo;
     ResourceAddInfo resourceAddInfo;
+    ResourceTransInfo resourceTransInfo;
 
     enum
     {
         IGNORE,
         FORK_INSTANCE,
-        RESOURCE_ADD_PLAN
+        RESOURCE_ADD_PLAN,
+        RESOURCE_TRANS_PLAN
     };
 };
 

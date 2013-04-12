@@ -1,8 +1,26 @@
 #include <QQueue>
+#include <QBitArray>
+#include <QDebug>
+#include <qmath.h>
+#include <iostream>
 
 #include "bsalgorithm.h"
 #include "bsworkflow.h"
 #include "bsconfig.h"
+
+struct InsWtpSta
+{
+    int instanceID;
+    int qLevel;
+    int standardPrice;
+    int extraWTP;
+    double val;
+    bool operator < (const InsWtpSta & other) const
+    {
+//        return this->val < other.val;
+        return this->standardPrice + this->extraWTP < other.standardPrice + other.extraWTP;
+    }
+};
 
 BSAlgorithm::BSAlgorithm()
 {
@@ -52,7 +70,7 @@ BSAction BSAlgorithm::subScheduleE2(const BSEvent &event)
     actions[2] = forkNewInstance(event.time, event.e2Info.instanceID,
                                  event.e2Info.reqVLevel, event.e2Info.extraWTP);
 
-
+    actions[3] = transResource(event.e2Info.reqVLevel, event.e2Info.extraWTP);
 
     int maxReward = -INT_MAX;
     int resAction = 0;
@@ -113,6 +131,85 @@ BSAction BSAlgorithm::addResource(int addReqVLevel, int extraWTP)
         resAddAction.reward -= totalResPrice;
     }
     return resAddAction;
+}
+
+BSAction BSAlgorithm::transResource(int addReqVLevel, int extraWTP)
+{
+    BSAction action;
+    action.aType = BSAction::RESOURCE_TRANS_PLAN;
+//    // [1] Cal the resource needed, it should minus candidate resource
+//    QList<int> needResourceList;
+    QList<BSSNode> & sNodeList = BSWorkFlow::Instance()->bsSNodeList;
+//    bool needResourceTransFlag = false;
+//    for (int i = 0; i < sNodeList.size(); i++)
+//    {
+//        int needResoruce = addReqVLevel * sNodeList[i].unitReqQLevel;
+//        needResourceList.append(needResoruce);
+//        int candiTotalQLevel = BSWorkFlow::Instance()->getTotalQLevel(0, sNodeList[i].resType);
+//        needResourceList[i] -= candiTotalQLevel;
+//        if (needResourceList[i] > 0)
+//        {
+//            needResourceTransFlag = true;
+//        }
+//    }
+//    // [2] need trans, then trans. otherwise do add resource
+//    if (!needResourceTransFlag)
+//    {
+//        action.reward = - INT_MAX;
+//        return action;
+//    }
+
+    QList<BSInstance> & ins = BSWorkFlow::Instance()->bsInstanceList;
+    int allSize = (int)pow(2, ins.size());
+    int *cost = new int[allSize];
+    memset(cost, 0, sizeof(int) * allSize);
+    for (int i = 0; i < allSize; i++)
+    {
+        QList<int> chouseInsList = isOne(i);
+        int sumQLevel = 0;
+        int sumCost = 0;
+        for (int j = 0; j < chouseInsList.size(); j++)
+        {
+            BSInstance & chouseInsTmp = ins[chouseInsList[j]];
+            BSRequirement & reqTmp = BSWorkFlow::Instance()->bsRequirementQueue[chouseInsTmp.requirementID];
+            // [1] 损失标准价格
+            int stadPrice = reqTmp.qLevel * BSConfig::Instance()->getUnitRPrice();
+            // [2] 损失原来的额外收益wtp
+            int wtpTmp = reqTmp.wtp;
+            // [3] 取消需求需要赔偿
+            int punish = reqTmp.qLevel * BSConfig::Instance()->getUnitRCancelCost();
+            sumQLevel += reqTmp.qLevel;
+            sumCost += stadPrice + wtpTmp + punish;
+        }
+
+        int candiReqVLevel = addReqVLevel - sumQLevel;
+        if (candiReqVLevel > 0)
+        {
+            for (int j = 0; j < sNodeList.size(); j++)
+            {
+                if (BSWorkFlow::Instance()->getTotalQLevel(0, sNodeList[j].resType)
+                        > sNodeList[j].unitReqQLevel * candiReqVLevel)
+                {
+                    // [4] 若取消的不够，还需要从候选资源里面增加，需要成本
+                    sumCost += candiReqVLevel * sNodeList[j].unitReqQLevel
+                            * BSWorkFlow::Instance()->getResourcePrice(0, sNodeList[j].resType);
+                }
+                else
+                {
+                    // [4.1] 候选资源不够，不能满足
+                    sumCost = INT_MAX;
+                    break;
+                }
+
+            }
+        }
+        cost[i] = sumCost;
+        qDebug() << i << cost[i];
+    }
+
+    delete[] cost;
+
+    return action;
 }
 
 BSAction BSAlgorithm::forkNewInstance(int time, int currInstanceID, int freeReqVLevel)
@@ -236,4 +333,20 @@ BSAction BSAlgorithm::forkNewInstance(int time, int currInstanceID, int addReqVL
     }
 
     return action;
+}
+
+QList<int> BSAlgorithm::isOne(int num)
+{
+    QList<int> res;
+    int i = 0;
+    while (num)
+    {
+        if (num & 1)
+        {
+            res.append(i);
+        }
+        num >>= 1;
+        i++;
+    }
+    return res;
 }

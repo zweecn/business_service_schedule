@@ -17,10 +17,11 @@ QString BSEvent::toString()
     }
     else if (this->eventType == BSEvent::REQUIREMENT_ADD_E2)
     {
-        res += QString("Type:%1 Ins:%2 ReqVLevel:%3")
+        res += QString("Type:%1 Ins:%2 ReqVLevel:%3 extraWTP:%4")
                 .arg("REQUIREMENT_ADD_E2")
-                .arg(this->e1Info.instanceID)
-                .arg(this->e1Info.reqVLevel);
+                .arg(this->e2Info.instanceID)
+                .arg(this->e2Info.reqVLevel)
+                .arg(this->e2Info.extraWTP);
     }
 
     res = res.trimmed().append("]");

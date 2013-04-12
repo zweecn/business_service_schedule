@@ -300,3 +300,27 @@ void BSWorkFlow::showResourceList()
         std::cout << bsResourceList[i].toString().toStdString() << std::endl;
     }
 }
+
+int BSWorkFlow::getResourcePrice(int period, int resType)
+{
+    for (int i = 0; i < bsResourceList.size(); i++)
+    {
+        if (bsResourceList[i].resType == resType && bsResourceList[i].period == period)
+        {
+            return bsResourceList[i].price;
+        }
+    }
+    return -1;
+}
+
+int BSWorkFlow::getTotalQLevel(int period, int resType)
+{
+    for (int i = 0; i < bsResourceList.size(); i++)
+    {
+        if (bsResourceList[i].resType == resType && bsResourceList[i].period == period)
+        {
+            return bsResourceList[i].totalQLevel;
+        }
+    }
+    return -1;
+}

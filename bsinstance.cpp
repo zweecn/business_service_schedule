@@ -2,6 +2,8 @@
 
 BSInstance::BSInstance()
 {
+    instanceID = -1;
+    requirementID = -1;
 }
 
 QString BSInstance::toString()
