@@ -3,6 +3,8 @@
 
 #include <QString>
 
+#include "bsrequirement.h"
+
 // Requirement reduce / cancel
 struct E1Info
 {
@@ -21,7 +23,8 @@ struct E2Info
 // New requirement
 struct E3Info
 {
-    int newReq;
+    int instanceID;
+    BSRequirement requirement;
 };
 
 // Resource changed
@@ -57,7 +60,8 @@ public:
     {
         NOT_EVENT = -1,
         REQUIREMENT_CANCEL_REDUCE_E1,
-        REQUIREMENT_ADD_E2
+        REQUIREMENT_ADD_E2,
+        REQUIREMENT_NEW_E3
     };
 };
 

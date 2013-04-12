@@ -2,6 +2,7 @@
 #include <QDebug>
 #include <QBitArray>
 #include <climits>
+#include <iostream>
 
 #include "bsmainwidget.h"
 #include "bsworkflow.h"
@@ -33,15 +34,25 @@ int main(int argc, char *argv[])
 //    event.e1Info.reqVLevel = 1;
 //    BSAction action = alg.schedule(event);
 
-    event.eventType = BSEvent::REQUIREMENT_ADD_E2;
+//    event.eventType = BSEvent::REQUIREMENT_ADD_E2;
+//    event.time = 1;
+//    event.e2Info.instanceID = 2;
+//    event.e2Info.reqVLevel = 1; // OR 2, then find the diff
+//    event.e2Info.extraWTP = 2000;
+
+    event.eventType = BSEvent::REQUIREMENT_NEW_E3;
     event.time = 1;
-    event.e2Info.instanceID = 2;
-    event.e2Info.reqVLevel = 1;
-    event.e2Info.extraWTP = 2000;
+    event.e3Info.instanceID = 2;
+    event.e3Info.requirement.setFree(false);
+    event.e3Info.requirement.customer = BSWorkFlow::Instance()->bsRequirementQueue.size();
+    event.e3Info.requirement.qLevel = 1;
+    event.e3Info.requirement.wtp = 1000;
+
     BSAction action = alg.schedule(event);
 
-//    qDebug() << event.toString();
-//    qDebug() << action.toString();
+    qDebug() << "The result is: --------------------------------------------------------";
+    qDebug() << event.toString();
+    qDebug() << action.toString();
 
 
     return 0;

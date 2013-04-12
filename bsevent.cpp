@@ -25,6 +25,13 @@ QString BSEvent::toString()
                 .arg(this->e2Info.reqVLevel)
                 .arg(this->e2Info.extraWTP);
     }
+    else if (this->eventType == BSEvent::REQUIREMENT_NEW_E3)
+    {
+        res += QString("Type:%1 Ins:%2 Req:%3")
+                .arg("REQUIREMENT_NEW_E3")
+                .arg(this->e3Info.instanceID)
+                .arg(this->e3Info.requirement.toString());
+    }
 
     res = res.trimmed().append("]");
     return res;

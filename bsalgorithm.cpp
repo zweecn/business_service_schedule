@@ -24,6 +24,10 @@ BSAction BSAlgorithm::schedule(const BSEvent &event)
     {
         actions = subScheduleE2(event);
     }
+    else if (event.eventType == BSEvent::REQUIREMENT_NEW_E3)
+    {
+        actions = subScheduleE3(event);
+    }
 
     int maxReward = - INT_MAX;
     int chouse = -1;
@@ -81,6 +85,22 @@ QList<BSAction> BSAlgorithm::subScheduleE2(const BSEvent &event)
 
     BSAction action4 = transResource(event.e2Info.reqVLevel, event.e2Info.extraWTP);
     actions.append(action4);
+
+    return actions;
+}
+
+QList<BSAction> BSAlgorithm::subScheduleE3(const BSEvent &event)
+{
+    QList<BSAction> actions;
+
+    BSAction action1;
+    action1.reward = 0;
+    action1.aType = BSAction::IGNORE;
+    actions.append(action1);
+
+    BSAction action2 = forkNewInstance(event.time, event.e3Info.instanceID,
+                       event.e3Info.requirement.qLevel, event.e3Info.requirement.wtp);
+    actions.append(action2);
 
     return actions;
 }
