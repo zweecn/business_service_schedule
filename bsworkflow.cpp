@@ -324,3 +324,15 @@ int BSWorkFlow::getTotalQLevel(int period, int resType)
     }
     return -1;
 }
+
+int BSWorkFlow::getRequirementQLevel(int instanceID)
+{
+    for (int i = 0; i < bsRequirementQueue.size(); i++)
+    {
+        if (bsRequirementQueue[i].customer == bsInstanceList[instanceID].requirementID)
+        {
+            return bsRequirementQueue[i].qLevel;
+        }
+    }
+    return -1;
+}

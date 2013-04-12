@@ -120,6 +120,7 @@ BSAction BSAlgorithm::addResource(int addReqVLevel, int extraWTP)
     {
         resAddAction.resourceAddInfo.resourceAddList.clear();
         resAddAction.reward = - INT_MAX;
+        qDebug() << "BSAlgorithm::addResource: Resource is not enough for the new requirement.";
     }
     else
     {
@@ -137,32 +138,13 @@ BSAction BSAlgorithm::transResource(int addReqVLevel, int extraWTP)
 {
     BSAction action;
     action.aType = BSAction::RESOURCE_TRANS_PLAN;
-//    // [1] Cal the resource needed, it should minus candidate resource
-//    QList<int> needResourceList;
     QList<BSSNode> & sNodeList = BSWorkFlow::Instance()->bsSNodeList;
-//    bool needResourceTransFlag = false;
-//    for (int i = 0; i < sNodeList.size(); i++)
-//    {
-//        int needResoruce = addReqVLevel * sNodeList[i].unitReqQLevel;
-//        needResourceList.append(needResoruce);
-//        int candiTotalQLevel = BSWorkFlow::Instance()->getTotalQLevel(0, sNodeList[i].resType);
-//        needResourceList[i] -= candiTotalQLevel;
-//        if (needResourceList[i] > 0)
-//        {
-//            needResourceTransFlag = true;
-//        }
-//    }
-//    // [2] need trans, then trans. otherwise do add resource
-//    if (!needResourceTransFlag)
-//    {
-//        action.reward = - INT_MAX;
-//        return action;
-//    }
-
     QList<BSInstance> & ins = BSWorkFlow::Instance()->bsInstanceList;
     int allSize = (int)pow(2, ins.size());
     int *cost = new int[allSize];
     memset(cost, 0, sizeof(int) * allSize);
+    int minCost = INT_MAX;
+    QList<int> minChouse;
     for (int i = 0; i < allSize; i++)
     {
         QList<int> chouseInsList = isOne(i);
@@ -204,10 +186,24 @@ BSAction BSAlgorithm::transResource(int addReqVLevel, int extraWTP)
             }
         }
         cost[i] = sumCost;
-        qDebug() << i << cost[i];
+        if (minCost > cost[i])
+        {
+            minCost = cost[i];
+            minChouse = chouseInsList;
+        }
     }
-
     delete[] cost;
+
+    // [*] 转移资源所得到新收入=新需求所带来的标准收入+新需求的额外支付-这个动作带来的成本消耗
+    // 从这里可以看到新的需求想要满足把其他的实例取消来满足的话，首先付的钱要足够赔付人家，才能执行这个动作
+    action.reward = BSConfig::Instance()->getUnitRPrice() * addReqVLevel + extraWTP - minCost;
+    for (int i = 0; i < minChouse.size(); i++)
+    {
+        ResourceTransNode node;
+        node.instanceID = i;
+        node.qLevel = BSWorkFlow::Instance()->getRequirementQLevel(i);
+        action.resourceTransInfo.resourceTransList.append(node);
+    }
 
     return action;
 }
