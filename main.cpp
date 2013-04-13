@@ -60,12 +60,12 @@ int main(int argc, char *argv[])
     event.e5Info.sNodeID = 1;
     event.e5Info.timeDelay = 10;
 
-    // Cur is infruence
-    event.eventType = BSEvent::SERVICE_EXEC_DELAY_E5;
-    event.time = 10;
-    event.e5Info.instanceID = 1;
-    event.e5Info.sNodeID = 1;
-    event.e5Info.timeDelay = 1;
+//    // Cur is infruence
+//    event.eventType = BSEvent::SERVICE_EXEC_DELAY_E5;
+//    event.time = 10;
+//    event.e5Info.instanceID = 1;
+//    event.e5Info.sNodeID = 1;
+//    event.e5Info.timeDelay = 1;
 
     BSAction action = alg.schedule(event);
 

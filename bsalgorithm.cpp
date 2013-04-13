@@ -116,7 +116,7 @@ QList<BSAction> BSAlgorithm::subScheduleE3(const BSEvent &event)
 QList<BSAction> BSAlgorithm::subScheduleE4(const BSEvent &event)
 {
     QList<BSAction> actions;
-    BSAction action1 = cancelInstance(event.time, event.e4Info.resType, event.e4Info.vQlevel);
+    BSAction action1 = cancelInstances(event.time, event.e4Info.resType, event.e4Info.vQlevel);
     actions.append(action1);
 
     return actions;
@@ -168,10 +168,13 @@ QList<BSAction> BSAlgorithm::subScheduleE5(const BSEvent &event)
     action1.reward = -sumCost;
     actions.append(action1);
 
+    BSAction action2 = cancelInstance(event.time, event.e5Info.instanceID);
+    actions.append(action2);
+
     return actions;
 }
 
-BSAction BSAlgorithm::cancelInstance(int time, int resType, int vQLevel)
+BSAction BSAlgorithm::cancelInstances(int time, int resType, int vQLevel)
 {
     BSAction action;
     action.aType = BSAction::CANCEL_INSTANCE;
@@ -231,7 +234,35 @@ BSAction BSAlgorithm::cancelInstance(int time, int resType, int vQLevel)
     minCost += resTotalQLevel * BSWorkFlow::Instance()->getResourcePrice(0, resType);
     action.reward = -minCost;
     action.cancelInstanceInfo.instanceIDList = minChouse;
+    // [*] 可以释放一些没有用过的资源
     action.cancelInstanceInfo.freeResourceList = freeResource(time, minChouse, resType);
+
+    return action;
+}
+
+BSAction BSAlgorithm::cancelInstance(int time, int instanceID)
+{
+    BSAction action;
+    action.aType = BSAction::CANCEL_INSTANCE;
+
+    int sumCost = 0;
+    // [1] 损失标准价格
+    int standardCost = BSConfig::Instance()->getUnitRPrice()
+            * BSWorkFlow::Instance()->getRequirementQLevel(0, instanceID);
+    // [2] 损失原来的额外收益wtp
+    int extraWTPCost = BSWorkFlow::Instance()->getRequirementWTP(0, instanceID);
+    // [3] 取消需求需要赔偿
+    int reparationCost = BSConfig::Instance()->getUnitRCancelCost()
+            * BSWorkFlow::Instance()->getRequirementQLevel(0, instanceID);
+    sumCost += standardCost + extraWTPCost + reparationCost;
+
+    QList<int> cancelInsList;
+    cancelInsList.append(instanceID);
+
+    action.reward = -sumCost;
+    action.cancelInstanceInfo.instanceIDList = cancelInsList;
+    // [*] 可以释放一些没有用过的资源
+    action.cancelInstanceInfo.freeResourceList = freeResource(time, cancelInsList, -1);
 
     return action;
 }

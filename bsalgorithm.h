@@ -24,7 +24,8 @@ private:
     BSAction forkNewInstance(int time, int currInstanceID, int addReqVLevel, int extraWTP);
     BSAction addResource(int addReqVLevel, int extraWTP);
     BSAction transResource(int addReqVLevel, int extraWTP);
-    BSAction cancelInstance(int time, int resType, int vQLevel);
+    BSAction cancelInstances(int time, int resType, int vQLevel);
+    BSAction cancelInstance(int time, int instanceID);
 
     QList<ResourceNode> freeResource(int time, QList<int> & chouseInstance, int resType);
     QList<int> isOne(int num);
