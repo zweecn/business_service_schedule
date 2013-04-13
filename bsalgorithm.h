@@ -25,7 +25,7 @@ private:
     BSAction transResource(int addReqVLevel, int extraWTP);
     BSAction cancelInstance(int time, int resType, int vQLevel);
 
-    QList<ResourceNode> freeResource(int time, QList<int> & chouseInstance);
+    QList<ResourceNode> freeResource(int time, QList<int> & chouseInstance, int resType);
     QList<int> isOne(int num);
     int addResourceTotalPrice(int addReqVLevel);
     int addResourceTotalPrice(int addReqVLevel, ResourceAddInfo & addInfo);

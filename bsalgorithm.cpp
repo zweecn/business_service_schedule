@@ -132,9 +132,9 @@ BSAction BSAlgorithm::cancelInstance(int time, int resType, int vQLevel)
 
     int requireVQLevel = ceil(((double)vQLevel - resTotalQLevel)
                                  / BSWorkFlow::Instance()->getSNodeUnitQLevel(resType));
-    qDebug() << vQLevel << resTotalQLevel
-             << BSWorkFlow::Instance()->getSNodeUnitQLevel(resType)
-             << "requireVQLevel:" << requireVQLevel;
+//    qDebug() << vQLevel << resTotalQLevel
+//             << BSWorkFlow::Instance()->getSNodeUnitQLevel(resType)
+//             << "requireVQLevel:" << requireVQLevel;
 
     QList<BSInstance> & ins = BSWorkFlow::Instance()->bsInstanceList;
     int allSize = (int)pow(2, ins.size());
@@ -174,22 +174,27 @@ BSAction BSAlgorithm::cancelInstance(int time, int resType, int vQLevel)
         }
     }
     delete[] cost;
-
+    // [4] 可以从候选资源里拿出一部分来，但是需要额外付钱
+    minCost += resTotalQLevel * BSWorkFlow::Instance()->getResourcePrice(0, resType);
     action.reward = -minCost;
     action.cancelInstanceInfo.instanceIDList = minChouse;
-    action.cancelInstanceInfo.freeResourceList = freeResource(time, minChouse);
+    action.cancelInstanceInfo.freeResourceList = freeResource(time, minChouse, resType);
 
     return action;
 }
 
-QList<ResourceNode> BSAlgorithm::freeResource(int time, QList<int> & chouseInstance)
+QList<ResourceNode> BSAlgorithm::freeResource(int time, QList<int> & chouseInstance, int resType)
 {
     QList<ResourceNode> freeList;
 
     QList<BSSNode> & sNodeList = BSWorkFlow::Instance()->bsSNodeList;
     for (int i = 0; i < sNodeList.size(); i++)
     {
-        int resType = sNodeList[i].resType;
+        int freeResType = sNodeList[i].resType;
+        if (freeResType == resType)
+        {
+            continue;
+        }
         int unitReqQLevel = sNodeList[i].unitReqQLevel;
         int sumFreeRes = 0;
         for (int j = 0; j < chouseInstance.size(); j++)
@@ -206,7 +211,7 @@ QList<ResourceNode> BSAlgorithm::freeResource(int time, QList<int> & chouseInsta
         if (sumFreeRes > 0)
         {
             ResourceNode node;
-            node.resourceType = resType;
+            node.resourceType = freeResType;
             node.amount = sumFreeRes;
             freeList.append(node);
         }

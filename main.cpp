@@ -21,10 +21,10 @@ int main(int argc, char *argv[])
 //    w.show();
 //    return a.exec();
 
-    BSWorkFlow::Instance()->showSNodeList();
-    BSWorkFlow::Instance()->showResourceList();
-    BSWorkFlow::Instance()->showInstanceList();
-    BSWorkFlow::Instance()->showRequirementQueue();
+//    BSWorkFlow::Instance()->showSNodeList();
+//    BSWorkFlow::Instance()->showResourceList();
+//    BSWorkFlow::Instance()->showInstanceList();
+//    BSWorkFlow::Instance()->showRequirementQueue();
 
     BSAlgorithm alg;
     BSEvent event;
