@@ -16,9 +16,10 @@ public:
     static BSWorkFlow * Instance();
 
     int getResourcePrice(int period, int resType);
-    int getTotalQLevel(int peroid, int resType);
+    int getResourceTotalQLevel(int peroid, int resType);
     int getRequirementQLevel(int instanceID);
     int getRequirementWTP(int instanceID);
+    int getSNodeUnitQLevel(int resType);
 
     void showInstanceList();
     void showRequirementQueue();

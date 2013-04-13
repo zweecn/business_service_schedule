@@ -32,6 +32,13 @@ QString BSEvent::toString()
                 .arg(this->e3Info.instanceID)
                 .arg(this->e3Info.requirement.toString());
     }
+    else if (this->eventType == BSEvent::RESOURCE_REDUCE_E4)
+    {
+        res += QString("Type:%1 ResType:%2 Amt:%3")
+                .arg("RESOURCE_REDUCE_E4")
+                .arg(this->e4Info.resType)
+                .arg(this->e4Info.vQlevel);
+    }
 
     res = res.trimmed().append("]");
     return res;

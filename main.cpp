@@ -21,10 +21,10 @@ int main(int argc, char *argv[])
 //    w.show();
 //    return a.exec();
 
-//    BSWorkFlow::Instance()->showSNodeList();
-//    BSWorkFlow::Instance()->showResourceList();
-//    BSWorkFlow::Instance()->showInstanceList();
-//    BSWorkFlow::Instance()->showRequirementQueue();
+    BSWorkFlow::Instance()->showSNodeList();
+    BSWorkFlow::Instance()->showResourceList();
+    BSWorkFlow::Instance()->showInstanceList();
+    BSWorkFlow::Instance()->showRequirementQueue();
 
     BSAlgorithm alg;
     BSEvent event;
@@ -40,13 +40,18 @@ int main(int argc, char *argv[])
 //    event.e2Info.reqVLevel = 1; // OR 2, then find the diff
 //    event.e2Info.extraWTP = 2000;
 
-    event.eventType = BSEvent::REQUIREMENT_NEW_E3;
-    event.time = 1;
-    event.e3Info.instanceID = 2;
-    event.e3Info.requirement.setFree(false);
-    event.e3Info.requirement.customer = BSWorkFlow::Instance()->bsRequirementQueue.size();
-    event.e3Info.requirement.qLevel = 1;
-    event.e3Info.requirement.wtp = 1000;
+//    event.eventType = BSEvent::REQUIREMENT_NEW_E3;
+//    event.time = 1;
+//    event.e3Info.instanceID = 2;
+//    event.e3Info.requirement.setFree(false);
+//    event.e3Info.requirement.customer = BSWorkFlow::Instance()->bsRequirementQueue.size();
+//    event.e3Info.requirement.qLevel = 1;
+//    event.e3Info.requirement.wtp = 1000;
+
+    event.eventType = BSEvent::RESOURCE_REDUCE_E4;
+    event.time = 10;
+    event.e4Info.resType = 2;
+    event.e4Info.vQlevel = 56;
 
     BSAction action = alg.schedule(event);
 

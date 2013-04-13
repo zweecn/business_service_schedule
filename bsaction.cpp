@@ -50,6 +50,23 @@ QString BSAction::toString()
                     .arg(resourceTransInfo.resourceAddList[i].amount);
         }
     }
+    else if (this->aType == BSAction::CANCEL_INSTANCE)
+    {
+        res += QString(" Type:%1 (CancelIns:")
+                .arg("CANCEL_INSTANCE");
+        for (int i = 0; i < cancelInstanceInfo.instanceIDList.size(); i++)
+        {
+            res += QString(" %1").arg(cancelInstanceInfo.instanceIDList[i]);
+        }
+        res += QString(") (FreeRes:");
+        for (int i = 0; i < cancelInstanceInfo.freeResourceList.size(); i++)
+        {
+            res += QString(" type:%1 Amt:%2")
+                    .arg(cancelInstanceInfo.freeResourceList[i].resourceType)
+                    .arg(cancelInstanceInfo.freeResourceList[i].amount);
+        }
+        res += QString(")");
+    }
     res += QString(" Reward:%2]").arg(this->reward);
     return res;
 }

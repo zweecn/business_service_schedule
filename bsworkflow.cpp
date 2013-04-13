@@ -313,7 +313,7 @@ int BSWorkFlow::getResourcePrice(int period, int resType)
     return -1;
 }
 
-int BSWorkFlow::getTotalQLevel(int period, int resType)
+int BSWorkFlow::getResourceTotalQLevel(int period, int resType)
 {
     for (int i = 0; i < bsResourceList.size(); i++)
     {
@@ -344,6 +344,18 @@ int BSWorkFlow::getRequirementWTP(int instanceID)
         if (bsRequirementQueue[i].customer == bsInstanceList[instanceID].requirementID)
         {
             return bsRequirementQueue[i].wtp;
+        }
+    }
+    return -1;
+}
+
+int BSWorkFlow::getSNodeUnitQLevel(int resType)
+{
+    for (int i = 0; i < bsSNodeList.size(); i++)
+    {
+        if (resType == bsSNodeList[i].resType)
+        {
+            return bsSNodeList[i].unitReqQLevel;
         }
     }
     return -1;

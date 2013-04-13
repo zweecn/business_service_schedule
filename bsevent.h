@@ -61,7 +61,8 @@ public:
         NOT_EVENT = -1,
         REQUIREMENT_CANCEL_REDUCE_E1,
         REQUIREMENT_ADD_E2,
-        REQUIREMENT_NEW_E3
+        REQUIREMENT_NEW_E3,
+        RESOURCE_REDUCE_E4
     };
 };
 

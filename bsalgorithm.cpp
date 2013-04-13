@@ -28,6 +28,10 @@ BSAction BSAlgorithm::schedule(const BSEvent &event)
     {
         actions = subScheduleE3(event);
     }
+    else if (event.eventType == BSEvent::RESOURCE_REDUCE_E4)
+    {
+        actions = subScheduleE4(event);
+    }
 
     int maxReward = - INT_MAX;
     int chouse = -1;
@@ -105,6 +109,112 @@ QList<BSAction> BSAlgorithm::subScheduleE3(const BSEvent &event)
     return actions;
 }
 
+QList<BSAction> BSAlgorithm::subScheduleE4(const BSEvent &event)
+{
+    QList<BSAction> actions;
+    BSAction action1 = cancelInstance(event.time, event.e4Info.resType, event.e4Info.vQlevel);
+    actions.append(action1);
+
+    return actions;
+}
+
+BSAction BSAlgorithm::cancelInstance(int time, int resType, int vQLevel)
+{
+    BSAction action;
+    action.aType = BSAction::CANCEL_INSTANCE;
+    int resTotalQLevel = BSWorkFlow::Instance()->getResourceTotalQLevel(0, resType);
+
+    if (resTotalQLevel >= vQLevel) //Add resource
+    {
+        qDebug() << "BSAlgorithm::cancelInstance: no need to cancel instalces.";
+        return action;
+    }
+
+    int requireVQLevel = ceil(((double)vQLevel - resTotalQLevel)
+                                 / BSWorkFlow::Instance()->getSNodeUnitQLevel(resType));
+    qDebug() << vQLevel << resTotalQLevel
+             << BSWorkFlow::Instance()->getSNodeUnitQLevel(resType)
+             << "requireVQLevel:" << requireVQLevel;
+
+    QList<BSInstance> & ins = BSWorkFlow::Instance()->bsInstanceList;
+    int allSize = (int)pow(2, ins.size());
+    int *cost = new int[allSize];
+    memset(cost, 0, sizeof(int) * allSize);
+    int minCost = INT_MAX;
+    QList<int> minChouse;
+    for (int i = 0; i < allSize; i++)
+    {
+        QList<int> chouseInsList = isOne(i);
+        int sumQLevel = 0;
+        int sumCost = 0;
+        for (int j = 0; j < chouseInsList.size(); j++)
+        {
+            int instanceID = chouseInsList[j];
+            // [1] 损失标准价格
+            int standardCost = BSConfig::Instance()->getUnitRPrice()
+                    * BSWorkFlow::Instance()->getRequirementQLevel(instanceID);
+            // [2] 损失原来的额外收益wtp
+            int extraWTPCost = BSWorkFlow::Instance()->getRequirementWTP(instanceID);
+            // [3] 取消需求需要赔偿
+            int reparationCost = BSConfig::Instance()->getUnitRCancelCost()
+                    * BSWorkFlow::Instance()->getRequirementQLevel(instanceID);
+            sumQLevel += BSWorkFlow::Instance()->getRequirementQLevel(instanceID);
+            sumCost += standardCost + extraWTPCost + reparationCost;
+        }
+
+        if (sumQLevel < requireVQLevel)
+        {
+            sumCost = INT_MAX;
+        }
+        cost[i] = sumCost;
+        if (minCost > cost[i])
+        {
+            minCost = cost[i];
+            minChouse = chouseInsList;
+        }
+    }
+    delete[] cost;
+
+    action.reward = -minCost;
+    action.cancelInstanceInfo.instanceIDList = minChouse;
+    action.cancelInstanceInfo.freeResourceList = freeResource(time, minChouse);
+
+    return action;
+}
+
+QList<ResourceNode> BSAlgorithm::freeResource(int time, QList<int> & chouseInstance)
+{
+    QList<ResourceNode> freeList;
+
+    QList<BSSNode> & sNodeList = BSWorkFlow::Instance()->bsSNodeList;
+    for (int i = 0; i < sNodeList.size(); i++)
+    {
+        int resType = sNodeList[i].resType;
+        int unitReqQLevel = sNodeList[i].unitReqQLevel;
+        int sumFreeRes = 0;
+        for (int j = 0; j < chouseInstance.size(); j++)
+        {
+            int insID = chouseInstance[j];
+            BSInstance & ins = BSWorkFlow::Instance()->bsInstanceList[insID];
+            int startTime = ins.sNodePlanList[i].startTime;
+            if (time <= startTime)
+            {
+                int vQLevel = BSWorkFlow::Instance()->getRequirementQLevel(insID);
+                sumFreeRes += vQLevel * unitReqQLevel;
+            }
+        }
+        if (sumFreeRes > 0)
+        {
+            ResourceNode node;
+            node.resourceType = resType;
+            node.amount = sumFreeRes;
+            freeList.append(node);
+        }
+    }
+
+    return freeList;
+}
+
 BSAction BSAlgorithm::addResource(int addReqVLevel, int extraWTP)
 {
     BSAction action;
@@ -164,7 +274,7 @@ BSAction BSAlgorithm::transResource(int addReqVLevel, int extraWTP)
         {
             for (int j = 0; j < sNodeList.size(); j++)
             {
-                if (BSWorkFlow::Instance()->getTotalQLevel(0, sNodeList[j].resType)
+                if (BSWorkFlow::Instance()->getResourceTotalQLevel(0, sNodeList[j].resType)
                         > sNodeList[j].unitReqQLevel * candiReqVLevel)
                 {
                     // [4] 若取消的不够，还需要从候选资源里面增加，需要成本
@@ -211,7 +321,7 @@ BSAction BSAlgorithm::transResource(int addReqVLevel, int extraWTP)
             ResourceAddNode node;
             node.resourceType = sNodeList[i].resType;
             node.amount = sNodeList[i].unitReqQLevel * (addReqVLevel - satisfyReq);
-            if (node.amount <= BSWorkFlow::Instance()->getTotalQLevel(0, node.resourceType))
+            if (node.amount <= BSWorkFlow::Instance()->getResourceTotalQLevel(0, node.resourceType))
             {
                 action.resourceTransInfo.resourceAddList.append(node);
             }
@@ -343,7 +453,7 @@ int BSAlgorithm::addResourceTotalPrice(int addReqVLevel)
     QList<BSSNode> & sNodeList = BSWorkFlow::Instance()->bsSNodeList;
     for (int i = 0; i < sNodeList.size(); i++)
     {
-        if (BSWorkFlow::Instance()->getTotalQLevel(0, sNodeList[i].resType)
+        if (BSWorkFlow::Instance()->getResourceTotalQLevel(0, sNodeList[i].resType)
                 >= addReqVLevel * sNodeList[i].unitReqQLevel)
         {
             sumPrice += BSWorkFlow::Instance()->getResourcePrice(0, sNodeList[i].resType)
@@ -363,7 +473,7 @@ int BSAlgorithm::addResourceTotalPrice(int addReqVLevel, ResourceAddInfo & addIn
     QList<BSSNode> & sNodeList = BSWorkFlow::Instance()->bsSNodeList;
     for (int i = 0; i < sNodeList.size(); i++)
     {
-        if (BSWorkFlow::Instance()->getTotalQLevel(0, sNodeList[i].resType)
+        if (BSWorkFlow::Instance()->getResourceTotalQLevel(0, sNodeList[i].resType)
                 >= addReqVLevel * sNodeList[i].unitReqQLevel)
         {
             sumPrice += BSWorkFlow::Instance()->getResourcePrice(0, sNodeList[i].resType)

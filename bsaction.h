@@ -38,6 +38,18 @@ struct ResourceTransInfo
     QList<ResourceAddNode> resourceAddList;
 };
 
+struct ResourceNode
+{
+    int resourceType;
+    int amount;
+};
+
+struct CancelInstanceInfo
+{
+    QList<int> instanceIDList;
+    QList<ResourceNode> freeResourceList;
+};
+
 class BSAction
 {
 public:
@@ -53,13 +65,15 @@ public:
     ForkInfo forkInfo;
     ResourceAddInfo resourceAddInfo;
     ResourceTransInfo resourceTransInfo;
+    CancelInstanceInfo cancelInstanceInfo;
 
     enum
     {
         IGNORE,
         FORK_INSTANCE,
         RESOURCE_ADD_PLAN,
-        RESOURCE_TRANS_PLAN
+        RESOURCE_TRANS_PLAN,
+        CANCEL_INSTANCE
     };
 };
 
