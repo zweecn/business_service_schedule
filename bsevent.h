@@ -42,6 +42,13 @@ struct E5Info
     int timeDelay;
 };
 
+// Failed
+struct E6Info
+{
+    int instanceID;
+    int sNodeID;
+};
+
 class BSEvent
 {
 public:
@@ -55,6 +62,7 @@ public:
     E3Info e3Info;
     E4Info e4Info;
     E5Info e5Info;
+    E6Info e6Info;
 
     enum
     {
@@ -63,7 +71,8 @@ public:
         REQUIREMENT_ADD_E2,
         REQUIREMENT_NEW_E3,
         RESOURCE_REDUCE_E4,
-        SERVICE_EXEC_DELAY_E5
+        SERVICE_EXEC_DELAY_E5,
+        SERVICE_EXEC_FAILED_E6
     };
 };
 

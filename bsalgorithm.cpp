@@ -36,6 +36,10 @@ BSAction BSAlgorithm::schedule(const BSEvent &event)
     {
         actions = subScheduleE5(event);
     }
+    else if (event.eventType == BSEvent::SERVICE_EXEC_FAILED_E6)
+    {
+        actions = subScheduleE6(event);
+    }
 
     int maxReward = - INT_MAX;
     int chouse = -1;
@@ -169,6 +173,15 @@ QList<BSAction> BSAlgorithm::subScheduleE5(const BSEvent &event)
     actions.append(action1);
 
     BSAction action2 = cancelInstance(event.time, event.e5Info.instanceID);
+    actions.append(action2);
+
+    return actions;
+}
+
+QList<BSAction> BSAlgorithm::subScheduleE6(const BSEvent &event)
+{
+    QList<BSAction> actions;
+    BSAction action2 = cancelInstance(event.time, event.e6Info.instanceID);
     actions.append(action2);
 
     return actions;

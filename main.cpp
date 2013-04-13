@@ -54,11 +54,11 @@ int main(int argc, char *argv[])
 //    event.e4Info.vQlevel = 56;
 
     // All is infruence
-    event.eventType = BSEvent::SERVICE_EXEC_DELAY_E5;
-    event.time = 10;
-    event.e5Info.instanceID = 1;
-    event.e5Info.sNodeID = 1;
-    event.e5Info.timeDelay = 10;
+//    event.eventType = BSEvent::SERVICE_EXEC_DELAY_E5;
+//    event.time = 10;
+//    event.e5Info.instanceID = 1;
+//    event.e5Info.sNodeID = 1;
+//    event.e5Info.timeDelay = 10;
 
 //    // Cur is infruence
 //    event.eventType = BSEvent::SERVICE_EXEC_DELAY_E5;
@@ -67,6 +67,11 @@ int main(int argc, char *argv[])
 //    event.e5Info.sNodeID = 1;
 //    event.e5Info.timeDelay = 1;
 
+
+    event.eventType = BSEvent::SERVICE_EXEC_FAILED_E6;
+    event.time = 10;
+    event.e6Info.instanceID = 1;
+    event.e6Info.sNodeID = 1;
     BSAction action = alg.schedule(event);
 
     qDebug() << "The result is: --------------------------------------------------------";
