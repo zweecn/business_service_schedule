@@ -48,10 +48,24 @@ int main(int argc, char *argv[])
 //    event.e3Info.requirement.qLevel = 1;
 //    event.e3Info.requirement.wtp = 1000;
 
-    event.eventType = BSEvent::RESOURCE_REDUCE_E4;
+//    event.eventType = BSEvent::RESOURCE_REDUCE_E4;
+//    event.time = 10;
+//    event.e4Info.resType = 2;
+//    event.e4Info.vQlevel = 56;
+
+    // All is infruence
+    event.eventType = BSEvent::SERVICE_EXEC_DELAY_E5;
     event.time = 10;
-    event.e4Info.resType = 2;
-    event.e4Info.vQlevel = 56;
+    event.e5Info.instanceID = 1;
+    event.e5Info.sNodeID = 1;
+    event.e5Info.timeDelay = 10;
+
+    // Cur is infruence
+    event.eventType = BSEvent::SERVICE_EXEC_DELAY_E5;
+    event.time = 10;
+    event.e5Info.instanceID = 1;
+    event.e5Info.sNodeID = 1;
+    event.e5Info.timeDelay = 1;
 
     BSAction action = alg.schedule(event);
 

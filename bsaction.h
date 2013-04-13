@@ -73,7 +73,8 @@ public:
         FORK_INSTANCE,
         RESOURCE_ADD_PLAN,
         RESOURCE_TRANS_PLAN,
-        CANCEL_INSTANCE
+        CANCEL_INSTANCE,
+        RETRY_SERVICE
     };
 };
 

@@ -18,6 +18,7 @@ private:
     QList<BSAction> subScheduleE2(const BSEvent & event);
     QList<BSAction> subScheduleE3(const BSEvent & event);
     QList<BSAction> subScheduleE4(const BSEvent & event);
+    QList<BSAction> subScheduleE5(const BSEvent & event);
 
     BSAction forkNewInstance(int time, int currInstanceID, int freeReqVLevel);
     BSAction forkNewInstance(int time, int currInstanceID, int addReqVLevel, int extraWTP);

@@ -325,11 +325,12 @@ int BSWorkFlow::getResourceTotalQLevel(int period, int resType)
     return -1;
 }
 
-int BSWorkFlow::getRequirementQLevel(int instanceID)
+int BSWorkFlow::getRequirementQLevel(int period, int instanceID)
 {
     for (int i = 0; i < bsRequirementQueue.size(); i++)
     {
-        if (bsRequirementQueue[i].customer == bsInstanceList[instanceID].requirementID)
+        if (bsRequirementQueue[i].customer == bsInstanceList[instanceID].requirementID
+                && bsRequirementQueue[i].expectedPeriod == period)
         {
             return bsRequirementQueue[i].qLevel;
         }
@@ -337,16 +338,30 @@ int BSWorkFlow::getRequirementQLevel(int instanceID)
     return -1;
 }
 
-int BSWorkFlow::getRequirementWTP(int instanceID)
+int BSWorkFlow::getRequirementWTP(int period, int instanceID)
 {
     for (int i = 0; i < bsRequirementQueue.size(); i++)
     {
-        if (bsRequirementQueue[i].customer == bsInstanceList[instanceID].requirementID)
+        if (bsRequirementQueue[i].customer == bsInstanceList[instanceID].requirementID
+                && bsRequirementQueue[i].expectedPeriod == period)
         {
             return bsRequirementQueue[i].wtp;
         }
     }
     return -1;
+}
+
+int BSWorkFlow::getRequirementTotalQLevel(int period)
+{
+    int sum = 0;
+    for (int i = 0; i < bsRequirementQueue.size(); i++)
+    {
+        if (bsRequirementQueue[i].expectedPeriod == period)
+        {
+            sum += bsRequirementQueue[i].qLevel;
+        }
+    }
+    return sum;
 }
 
 int BSWorkFlow::getSNodeUnitQLevel(int resType)

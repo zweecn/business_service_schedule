@@ -39,6 +39,14 @@ QString BSEvent::toString()
                 .arg(this->e4Info.resType)
                 .arg(this->e4Info.vQlevel);
     }
+    else if (this->eventType == BSEvent::SERVICE_EXEC_DELAY_E5)
+    {
+        res += QString("Type:%1 Ins:%2 SNode:%3 TimeDelay:%4")
+                .arg("SERVICE_EXEC_DELAY_E5")
+                .arg(this->e5Info.instanceID)
+                .arg(this->e5Info.sNodeID)
+                .arg(this->e5Info.timeDelay);
+    }
 
     res = res.trimmed().append("]");
     return res;

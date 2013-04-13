@@ -32,6 +32,10 @@ BSAction BSAlgorithm::schedule(const BSEvent &event)
     {
         actions = subScheduleE4(event);
     }
+    else if (event.eventType == BSEvent::SERVICE_EXEC_DELAY_E5)
+    {
+        actions = subScheduleE5(event);
+    }
 
     int maxReward = - INT_MAX;
     int chouse = -1;
@@ -118,6 +122,55 @@ QList<BSAction> BSAlgorithm::subScheduleE4(const BSEvent &event)
     return actions;
 }
 
+QList<BSAction> BSAlgorithm::subScheduleE5(const BSEvent &event)
+{
+    QList<BSAction> actions;
+    BSAction action1;
+    action1.aType = BSAction::IGNORE;
+
+    int sNodeID = event.e5Info.sNodeID;
+    int insID = event.e5Info.instanceID;
+    int timeDelay = event.e5Info.timeDelay;
+    QList<BSInstance> & ins = BSWorkFlow::Instance()->bsInstanceList;
+    QList<BSSNode> & sNodeList = BSWorkFlow::Instance()->bsSNodeList;
+    int firstSyncNodeID = 0;
+    int firstSyncTime = 0;
+    for (int i = sNodeID; i < sNodeList.size(); i++)
+    {
+        if (sNodeList[i].concurrencyType == 1)
+        {
+            firstSyncNodeID = i;
+            break;
+        }
+    }
+    if (firstSyncNodeID > 0)
+    {
+        firstSyncTime = ins[insID].sNodePlanList[firstSyncNodeID-1].endTime + timeDelay;
+    }
+    int sumCost = 0;
+    // Others are infruenced
+    if (firstSyncTime > ins[insID].sNodePlanList[firstSyncNodeID].startTime)
+    {
+        // [1] 每个需求都因为同步结点的延时而延时，加上延迟费用
+        int totalQLevel = BSWorkFlow::Instance()->getRequirementTotalQLevel(0);
+        sumCost += BSConfig::Instance()->getUnitTimeDelayCost() * timeDelay * totalQLevel;
+        qDebug() << BSConfig::Instance()->getUnitTimeDelayCost()
+                 << timeDelay << totalQLevel << "All is infrunced.";
+    }
+    else
+    {
+        // [1.1] 其他需求没有因为本实例的延时而延时，所以不需要加上它们的延时费用
+        int currQLevel = BSWorkFlow::Instance()->getRequirementQLevel(0, insID);
+        sumCost += BSConfig::Instance()->getUnitTimeDelayCost() * timeDelay * currQLevel;
+        qDebug() << BSConfig::Instance()->getUnitTimeDelayCost()
+                 << timeDelay << currQLevel << "Curr is infrunced.";
+    }
+    action1.reward = -sumCost;
+    actions.append(action1);
+
+    return actions;
+}
+
 BSAction BSAlgorithm::cancelInstance(int time, int resType, int vQLevel)
 {
     BSAction action;
@@ -152,13 +205,13 @@ BSAction BSAlgorithm::cancelInstance(int time, int resType, int vQLevel)
             int instanceID = chouseInsList[j];
             // [1] 损失标准价格
             int standardCost = BSConfig::Instance()->getUnitRPrice()
-                    * BSWorkFlow::Instance()->getRequirementQLevel(instanceID);
+                    * BSWorkFlow::Instance()->getRequirementQLevel(0, instanceID);
             // [2] 损失原来的额外收益wtp
-            int extraWTPCost = BSWorkFlow::Instance()->getRequirementWTP(instanceID);
+            int extraWTPCost = BSWorkFlow::Instance()->getRequirementWTP(0, instanceID);
             // [3] 取消需求需要赔偿
             int reparationCost = BSConfig::Instance()->getUnitRCancelCost()
-                    * BSWorkFlow::Instance()->getRequirementQLevel(instanceID);
-            sumQLevel += BSWorkFlow::Instance()->getRequirementQLevel(instanceID);
+                    * BSWorkFlow::Instance()->getRequirementQLevel(0, instanceID);
+            sumQLevel += BSWorkFlow::Instance()->getRequirementQLevel(0, instanceID);
             sumCost += standardCost + extraWTPCost + reparationCost;
         }
 
@@ -204,7 +257,7 @@ QList<ResourceNode> BSAlgorithm::freeResource(int time, QList<int> & chouseInsta
             int startTime = ins.sNodePlanList[i].startTime;
             if (time <= startTime)
             {
-                int vQLevel = BSWorkFlow::Instance()->getRequirementQLevel(insID);
+                int vQLevel = BSWorkFlow::Instance()->getRequirementQLevel(0, insID);
                 sumFreeRes += vQLevel * unitReqQLevel;
             }
         }
@@ -264,13 +317,13 @@ BSAction BSAlgorithm::transResource(int addReqVLevel, int extraWTP)
             int instanceID = chouseInsList[j];
             // [1] 损失标准价格
             int standardCost = BSConfig::Instance()->getUnitRPrice()
-                    * BSWorkFlow::Instance()->getRequirementQLevel(instanceID);
+                    * BSWorkFlow::Instance()->getRequirementQLevel(0, instanceID);
             // [2] 损失原来的额外收益wtp
-            int extraWTPCost = BSWorkFlow::Instance()->getRequirementWTP(instanceID);
+            int extraWTPCost = BSWorkFlow::Instance()->getRequirementWTP(0, instanceID);
             // [3] 取消需求需要赔偿
             int reparationCost = BSConfig::Instance()->getUnitRCancelCost()
-                    * BSWorkFlow::Instance()->getRequirementQLevel(instanceID);
-            sumQLevel += BSWorkFlow::Instance()->getRequirementQLevel(instanceID);
+                    * BSWorkFlow::Instance()->getRequirementQLevel(0, instanceID);
+            sumQLevel += BSWorkFlow::Instance()->getRequirementQLevel(0, instanceID);
             sumCost += standardCost + extraWTPCost + reparationCost;
         }
 
@@ -313,7 +366,7 @@ BSAction BSAlgorithm::transResource(int addReqVLevel, int extraWTP)
         int instanceID = minChouse[i];
         ResourceTransNode node;
         node.instanceID = instanceID;
-        node.qLevel = BSWorkFlow::Instance()->getRequirementQLevel(instanceID);
+        node.qLevel = BSWorkFlow::Instance()->getRequirementQLevel(0, instanceID);
         action.resourceTransInfo.resourceTransList.append(node);
         satisfyReq += node.qLevel;
     }
