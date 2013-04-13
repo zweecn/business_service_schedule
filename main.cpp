@@ -67,7 +67,14 @@ int main(int argc, char *argv[])
 //    event.e5Info.sNodeID = 1;
 //    event.e5Info.timeDelay = 1;
 
+// No NEED RETRY
+//    event.eventType = BSEvent::SERVICE_EXEC_FAILED_E6;
+//    event.time = 10;
+//    event.e6Info.instanceID = 1;
+//    event.e6Info.sNodeID = 2;
+//    BSAction action = alg.schedule(event);
 
+    // Need retry
     event.eventType = BSEvent::SERVICE_EXEC_FAILED_E6;
     event.time = 10;
     event.e6Info.instanceID = 1;

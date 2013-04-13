@@ -67,6 +67,13 @@ QString BSAction::toString()
         }
         res += QString(")");
     }
+    else if (this->aType == BSAction::RETRY_SERVICE)
+    {
+        res += QString(" Type:%1 Ins:%2 SNode:%3")
+                .arg("RETRY_SERVICE")
+                .arg(retryInstanceInfo.instanceID)
+                .arg(retryInstanceInfo.sNodeID);
+    }
     res += QString(" Reward:%2]").arg(this->reward);
     return res;
 }

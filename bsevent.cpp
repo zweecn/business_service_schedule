@@ -47,6 +47,13 @@ QString BSEvent::toString()
                 .arg(this->e5Info.sNodeID)
                 .arg(this->e5Info.timeDelay);
     }
+    else if (this->eventType == BSEvent::SERVICE_EXEC_FAILED_E6)
+    {
+        res += QString("Type:%1 Ins:%2 SNode:%3")
+                .arg("SERVICE_EXEC_FAILED_E6")
+                .arg(this->e6Info.instanceID)
+                .arg(this->e6Info.sNodeID);
+    }
 
     res = res.trimmed().append("]");
     return res;

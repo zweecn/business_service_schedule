@@ -313,6 +313,15 @@ int BSWorkFlow::getResourcePrice(int period, int resType)
     return -1;
 }
 
+int BSWorkFlow::getResourcePrice(int period, int instanceID, int sNodeID)
+{
+    BSSNode & sNode = bsSNodeList[sNodeID];
+    int resType = sNode.resType;
+    int qLevel = getRequirementQLevel(period, instanceID);
+    int price = getResourcePrice(period, resType);
+    return price * qLevel;
+}
+
 int BSWorkFlow::getResourceTotalQLevel(int period, int resType)
 {
     for (int i = 0; i < bsResourceList.size(); i++)
@@ -374,4 +383,9 @@ int BSWorkFlow::getSNodeUnitQLevel(int resType)
         }
     }
     return -1;
+}
+
+int BSWorkFlow::getSNodeConcurrencyType(int sNodeID)
+{
+    return bsSNodeList[sNodeID].concurrencyType;
 }

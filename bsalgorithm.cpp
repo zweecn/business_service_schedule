@@ -181,9 +181,11 @@ QList<BSAction> BSAlgorithm::subScheduleE5(const BSEvent &event)
 QList<BSAction> BSAlgorithm::subScheduleE6(const BSEvent &event)
 {
     QList<BSAction> actions;
+    BSAction action1 = retryInstance(event.e6Info.instanceID, event.e6Info.sNodeID);
+    actions.append(action1);
+
     BSAction action2 = cancelInstance(event.time, event.e6Info.instanceID);
     actions.append(action2);
-
     return actions;
 }
 
@@ -277,6 +279,59 @@ BSAction BSAlgorithm::cancelInstance(int time, int instanceID)
     // [*] 可以释放一些没有用过的资源
     action.cancelInstanceInfo.freeResourceList = freeResource(time, cancelInsList, -1);
 
+    return action;
+}
+
+BSAction BSAlgorithm::retryInstance(int instanceID, int sNodeID)
+{
+    BSAction action;
+    action.aType = BSAction::RETRY_SERVICE;
+    QList<BSInstance> & ins = BSWorkFlow::Instance()->bsInstanceList;
+    QList<BSSNode> & sNodeList = BSWorkFlow::Instance()->bsSNodeList;
+    int firstSyncNodeID = -1;
+    int firstSyncTime = 0;
+    for (int i = sNodeID; i < sNodeList.size(); i++)
+    {
+        if (sNodeList[i].concurrencyType == 1)
+        {
+            firstSyncNodeID = i;
+            break;
+        }
+    }
+    if (firstSyncNodeID == -1)
+    {
+        // All is independent
+    }
+    else if (firstSyncNodeID == 0)
+    {
+        firstSyncTime = (ins[instanceID].sNodePlanList[sNodeID].endTime
+                - ins[instanceID].sNodePlanList[sNodeID].startTime);
+    }
+    else if (firstSyncNodeID > 0)
+    {
+        firstSyncTime = ins[instanceID].sNodePlanList[firstSyncNodeID-1].endTime
+                + (ins[instanceID].sNodePlanList[sNodeID].endTime
+                - ins[instanceID].sNodePlanList[sNodeID].startTime);
+    }
+    /* 如果
+     * 1. 没有同步结点
+     * 2. 重试的话，下一个同步结点会受影响延迟
+     * 3. 故障结点本身就是同步结点
+     * 这些情况不需要重试
+     */
+    if (firstSyncNodeID == -1
+            || firstSyncTime > ins[instanceID].sNodePlanList[firstSyncNodeID].startTime
+            || 1 == BSWorkFlow::Instance()->getSNodeConcurrencyType(sNodeID))
+    {
+        action.reward = - INT_MAX;
+    }
+    else
+    {
+        action.reward = BSWorkFlow::Instance()->getResourcePrice(0, instanceID, sNodeID);
+    }
+
+    action.retryInstanceInfo.instanceID = instanceID;
+    action.retryInstanceInfo.sNodeID = sNodeID;
     return action;
 }
 

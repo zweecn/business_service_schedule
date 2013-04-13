@@ -50,6 +50,12 @@ struct CancelInstanceInfo
     QList<ResourceNode> freeResourceList;
 };
 
+struct RetryInstanceInfo
+{
+    int instanceID;
+    int sNodeID;
+};
+
 class BSAction
 {
 public:
@@ -66,6 +72,7 @@ public:
     ResourceAddInfo resourceAddInfo;
     ResourceTransInfo resourceTransInfo;
     CancelInstanceInfo cancelInstanceInfo;
+    RetryInstanceInfo retryInstanceInfo;
 
     enum
     {
