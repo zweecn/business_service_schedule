@@ -13,7 +13,7 @@ BSAlgorithm::BSAlgorithm()
 {
 }
 
-BSAction BSAlgorithm::schedule(const BSEvent &event)
+BSAction BSAlgorithm::schedule(const BSEvent &event, bool printAllAction)
 {
     QList<BSAction> actions;
     if (event.eventType == BSEvent::REQUIREMENT_CANCEL_REDUCE_E1)
@@ -50,7 +50,10 @@ BSAction BSAlgorithm::schedule(const BSEvent &event)
             maxReward = actions[i].reward;
             chouse = i;
         }
-        qDebug() << actions[i].toString();
+        if (printAllAction)
+        {
+            qDebug() << i << actions[i].toString();
+        }
     }
 
     if (!(chouse >= 0 && chouse < actions.size()))
@@ -98,6 +101,10 @@ QList<BSAction> BSAlgorithm::subScheduleE2(const BSEvent &event)
     BSAction action4 = transResource(event.e2Info.reqVLevel, event.e2Info.extraWTP);
     actions.append(action4);
 
+    BSAction action5 = forkNextPeriod(event.time, event.e2Info.instanceID,
+                                      event.e2Info.reqVLevel, event.e2Info.extraWTP);
+    actions.append(action5);
+
     return actions;
 }
 
@@ -113,6 +120,10 @@ QList<BSAction> BSAlgorithm::subScheduleE3(const BSEvent &event)
     BSAction action2 = forkNewInstance(event.time, event.e3Info.instanceID,
                        event.e3Info.requirement.qLevel, event.e3Info.requirement.wtp);
     actions.append(action2);
+
+    BSAction action3 = forkNextPeriod(event.time, event.e3Info.instanceID,
+                   event.e3Info.requirement.qLevel, event.e3Info.requirement.wtp);
+    actions.append(action3);
 
     return actions;
 }
@@ -174,6 +185,9 @@ QList<BSAction> BSAlgorithm::subScheduleE5(const BSEvent &event)
 
     BSAction action2 = cancelInstance(event.time, event.e5Info.instanceID);
     actions.append(action2);
+
+//    BSAction action3 = delayNextPeriod(event.time, event.e5Info.instanceID);
+//    actions.append(action3);
 
     return actions;
 }
@@ -335,7 +349,63 @@ BSAction BSAlgorithm::retryInstance(int instanceID, int sNodeID)
     return action;
 }
 
-QList<ResourceNode> BSAlgorithm::freeResource(int time, QList<int> & chouseInstance, int resType)
+BSAction BSAlgorithm::forkNextPeriod(int time, int instanceID, int newQlevel, int extraWTP)
+{
+    BSRequirement req;
+    req.qLevel = newQlevel;
+    req.wtp = extraWTP;
+    req.customer = BSWorkFlow::Instance()->bsRequirementQueue.size();
+    req.expectedPeriod = 1;
+
+    BSAction action = delayNextPeriod(time, instanceID, req);
+    //[3] 需要增加新增加的需求成功执行的标准价格和额外价格
+    action.reward += BSConfig::Instance()->getUnitRPrice() * newQlevel + extraWTP;
+    return action;
+}
+
+BSAction BSAlgorithm::delayNextPeriod(int time, int instanceID)
+{
+    BSAction action;
+    action.aType = BSAction::FORK_TO_NEXT_PEROID;
+    BSInstance & ins = BSWorkFlow::Instance()->bsInstanceList[instanceID];
+    const BSRequirement & req = BSWorkFlow::Instance()->bsRequirementQueue[ins.requirementID];
+    return delayNextPeriod(time, instanceID, req);
+}
+
+BSAction BSAlgorithm::delayNextPeriod(int time, int instanceID, const BSRequirement & req)
+{
+    BSAction action;
+    action.aType = BSAction::FORK_TO_NEXT_PEROID;
+    QList<BSSNode> & sNodeList = BSWorkFlow::Instance()->bsSNodeList;
+    int sumCost = 0;
+    for (int i = 0; i < sNodeList.size(); i++)
+    {
+        int freeRes = BSWorkFlow::Instance()->getResourceTotalQLevel(1, sNodeList[i].resType);
+        if (sNodeList[i].unitReqQLevel * req.qLevel > freeRes)
+        {
+            action.reward = - INT_MAX;
+            return action;
+        }
+        sumCost += sNodeList[i].unitReqQLevel * req.qLevel
+                * BSWorkFlow::Instance()->getResourcePrice(1, sNodeList[i].resType);
+    }
+    action.delayToNextPeriodInfo.instanceID = instanceID;
+    action.delayToNextPeriodInfo.beforeRequirementID = req.customer;
+    action.delayToNextPeriodInfo.nextRequirement = req;
+    action.delayToNextPeriodInfo.nextRequirement.customer
+            = BSWorkFlow::Instance()->bsRequirementQueue.size();
+    action.delayToNextPeriodInfo.nextRequirement.expectedPeriod = 1;
+    QList<int> insList;
+    insList.append(instanceID);
+    action.delayToNextPeriodInfo.freeResourceList = freeResource(time, insList, -1);
+    // [1] 推迟到下一个周期的赔偿
+    action.reward = -BSConfig::Instance()->getUnitDelayCost() * req.qLevel;
+    // [2] 下一个周期需要多购买资源的费用
+    action.reward -= sumCost;
+    return action;
+}
+
+QList<ResourceNode> BSAlgorithm::freeResource(int time, QList<int> & chouseInstance, int exceptResType)
 {
     QList<ResourceNode> freeList;
 
@@ -343,7 +413,7 @@ QList<ResourceNode> BSAlgorithm::freeResource(int time, QList<int> & chouseInsta
     for (int i = 0; i < sNodeList.size(); i++)
     {
         int freeResType = sNodeList[i].resType;
-        if (freeResType == resType)
+        if (freeResType == exceptResType)
         {
             continue;
         }

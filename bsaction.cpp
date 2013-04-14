@@ -1,4 +1,5 @@
 #include <climits>
+#include <QDebug>
 
 #include "bsaction.h"
 
@@ -73,6 +74,21 @@ QString BSAction::toString()
                 .arg("RETRY_SERVICE")
                 .arg(retryInstanceInfo.instanceID)
                 .arg(retryInstanceInfo.sNodeID);
+    }
+    else if (this->aType == BSAction::FORK_TO_NEXT_PEROID)
+    {
+        res += QString(" Type:%1 Ins:%2 NextReq:%3")
+                .arg("FORK_TO_NEXT_PEROID")
+                .arg(delayToNextPeriodInfo.instanceID)
+                .arg(delayToNextPeriodInfo.nextRequirement.toString());
+        res += QString(") (FreeRes:");
+        for (int i = 0; i < delayToNextPeriodInfo.freeResourceList.size(); i++)
+        {
+            res += QString(" type:%1 Amt:%2")
+                    .arg(delayToNextPeriodInfo.freeResourceList[i].resourceType)
+                    .arg(delayToNextPeriodInfo.freeResourceList[i].amount);
+        }
+        res += QString(")");
     }
     res += QString(" Reward:%2]").arg(this->reward);
     return res;

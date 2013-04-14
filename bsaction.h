@@ -56,6 +56,14 @@ struct RetryInstanceInfo
     int sNodeID;
 };
 
+struct DelayToNextPeriodInfo
+{
+    int instanceID;
+    int beforeRequirementID;
+    BSRequirement nextRequirement;
+    QList<ResourceNode> freeResourceList;
+};
+
 class BSAction
 {
 public:
@@ -73,6 +81,7 @@ public:
     ResourceTransInfo resourceTransInfo;
     CancelInstanceInfo cancelInstanceInfo;
     RetryInstanceInfo retryInstanceInfo;
+    DelayToNextPeriodInfo delayToNextPeriodInfo;
 
     enum
     {
@@ -81,7 +90,8 @@ public:
         RESOURCE_ADD_PLAN,
         RESOURCE_TRANS_PLAN,
         CANCEL_INSTANCE,
-        RETRY_SERVICE
+        RETRY_SERVICE,
+        FORK_TO_NEXT_PEROID
     };
 };
 

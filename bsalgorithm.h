@@ -11,7 +11,7 @@ class BSAlgorithm
 public:
     BSAlgorithm();
 
-    BSAction schedule(const BSEvent & event);
+    BSAction schedule(const BSEvent & event, bool printAllAction);
 
 private:
     QList<BSAction> subScheduleE1(const BSEvent & event);
@@ -28,8 +28,11 @@ private:
     BSAction cancelInstances(int time, int resType, int vQLevel);
     BSAction cancelInstance(int time, int instanceID);
     BSAction retryInstance(int instanceID, int sNodeID);
+    BSAction forkNextPeriod(int time, int instanceID, int newQlevel, int extraWTP);
+    BSAction delayNextPeriod(int time, int instanceID);
+    BSAction delayNextPeriod(int time, int instanceID, const BSRequirement & req);
 
-    QList<ResourceNode> freeResource(int time, QList<int> & chouseInstance, int resType);
+    QList<ResourceNode> freeResource(int time, QList<int> & chouseInstance, int exceptResType);
     QList<int> isOne(int num);
     int addResourceTotalPrice(int addReqVLevel);
     int addResourceTotalPrice(int addReqVLevel, ResourceAddInfo & addInfo);

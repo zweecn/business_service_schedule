@@ -389,3 +389,16 @@ int BSWorkFlow::getSNodeConcurrencyType(int sNodeID)
 {
     return bsSNodeList[sNodeID].concurrencyType;
 }
+
+void BSWorkFlow::setResourceQLevel(int period, int resType, int totalQLevel)
+{
+    for (int i = 0; i < bsResourceList.size(); i++)
+    {
+        BSResource & res = bsResourceList[i];
+        if (res.period == period && res.resType == resType)
+        {
+            res.totalQLevel = totalQLevel;
+            break;
+        }
+    }
+}

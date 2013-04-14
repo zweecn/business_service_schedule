@@ -9,6 +9,7 @@ public:
     BSRequirement();
 
     QString toString();
+    void reset();
     void setFree(bool _free);
     bool isFree();
 

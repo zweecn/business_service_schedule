@@ -6,6 +6,16 @@ BSRequirement::BSRequirement()
     qLevel = -1;
     expectedPeriod = -1;
     wtp = -1;
+    free = true;
+}
+
+void BSRequirement::reset()
+{
+    customer = -1;
+    qLevel = -1;
+    expectedPeriod = -1;
+    wtp = -1;
+    free = true;
 }
 
 QString BSRequirement::toString()
