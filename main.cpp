@@ -143,48 +143,94 @@ int main(int argc, char *argv[])
 //    qDebug() << event.toString();
 //    qDebug() << action.toString() << "\n";
 
-    /* Test E4 新增顾客需求
-     * 3. 本周期和下一周期的资源都不够，只能不作为
-     *   或者给的extraWTP不够，只能在不作为
-     */
+//    /* Test E4 新增顾客需求
+//     * 1. 下一周期的资源够迁移到下一周期的，可以取消部分当前的，迁移到下一周期
+//     */
 //    event.eventType = BSEvent::RESOURCE_REDUCE_E4;
 //    event.time = 10;
 //    event.e4Info.resType = 2;
 //    event.e4Info.vQlevel = 56;
-
-    // All is infruence
-//    event.eventType = BSEvent::SERVICE_EXEC_DELAY_E5;
-//    event.time = 10;
-//    event.e5Info.instanceID = 1;
-//    event.e5Info.sNodeID = 1;
-//    event.e5Info.timeDelay = 10;
-
-//    // Cur is infruence
-//    event.eventType = BSEvent::SERVICE_EXEC_DELAY_E5;
-//    event.time = 10;
-//    event.e5Info.instanceID = 1;
-//    event.e5Info.sNodeID = 1;
-//    event.e5Info.timeDelay = 1;
-
-// No NEED RETRY
-//    event.eventType = BSEvent::SERVICE_EXEC_FAILED_E6;
-//    event.time = 10;
-//    event.e6Info.instanceID = 1;
-//    event.e6Info.sNodeID = 2;
-//    BSAction action = alg.schedule(event);
-
-    // Need retry
-//    event.eventType = BSEvent::SERVICE_EXEC_FAILED_E6;
-//    event.time = 10;
-//    event.e6Info.instanceID = 1;
-//    event.e6Info.sNodeID = 1;
-
-//    action = alg.schedule(event);
-
-//    qDebug() << "\nThe result is:";
+//    action = alg.schedule(event, true);
+//    qDebug() << "The result is:";
 //    qDebug() << event.toString();
 //    qDebug() << action.toString() << "\n";
 
+//    /* Test E4 新增顾客需求
+//     * 1. 下一周期的资源不够迁移到下一周期的，只能取消当前的
+//     */
+//    event.eventType = BSEvent::RESOURCE_REDUCE_E4;
+//    event.time = 10;
+//    event.e4Info.resType = 2;
+//    event.e4Info.vQlevel = 56;
+//    BSWorkFlow::Instance()->setResourceQLevel(1, 2, 0);
+//    action = alg.schedule(event, true);
+//    qDebug() << "The result is:";
+//    qDebug() << event.toString();
+//    qDebug() << action.toString() << "\n";
+
+//    /* Test E5 新增顾客需求
+//     * 1. 延时不影响同步结点，可以执行不作为
+//     */
+//    event.eventType = BSEvent::SERVICE_EXEC_DELAY_E5;
+//    event.time = 10;
+//    event.e5Info.instanceID = 1;
+//    event.e5Info.sNodeID = 1;
+//    event.e5Info.timeDelay = 1; //Mark
+//    action = alg.schedule(event, true);
+//    qDebug() << "The result is:";
+//    qDebug() << event.toString();
+//    qDebug() << action.toString() << "\n";
+
+//    /* Test E5 新增顾客需求
+//     * 2. 延时影响了同步结点，不能不作为，需要推迟当前实例
+//     */
+//    event.eventType = BSEvent::SERVICE_EXEC_DELAY_E5;
+//    event.time = 10;
+//    event.e5Info.instanceID = 1;
+//    event.e5Info.sNodeID = 1;
+//    event.e5Info.timeDelay = 10; //Mark
+//    action = alg.schedule(event, true);
+//    qDebug() << "The result is:";
+//    qDebug() << event.toString();
+//    qDebug() << action.toString() << "\n";
+
+//    /* Test E5 新增顾客需求
+//     * 3. 后一个周期的资源不够，不能延迟，只能取消/或者忽略，忽略的前提是取消带来的代价更大
+//     */
+//    event.eventType = BSEvent::SERVICE_EXEC_DELAY_E5;
+//    event.time = 10;
+//    event.e5Info.instanceID = 1;
+//    event.e5Info.sNodeID = 1;
+//    event.e5Info.timeDelay = 10; //Mark
+//    BSWorkFlow::Instance()->setResourceQLevel(1, 2, 0);
+//    action = alg.schedule(event, true);
+//    qDebug() << "The result is:";
+//    qDebug() << event.toString();
+//    qDebug() << action.toString() << "\n";
+
+    /* Test E5 新增顾客需求
+     * 1. 已经执行到同步结点，不能重试
+     */
+    event.eventType = BSEvent::SERVICE_EXEC_FAILED_E6;
+    event.time = 10;
+    event.e6Info.instanceID = 1;
+    event.e6Info.sNodeID = 2;
+    action = alg.schedule(event, true);
+    qDebug() << "The result is:";
+    qDebug() << event.toString();
+    qDebug() << action.toString() << "\n";
+
+    /* Test E5 新增顾客需求
+     * 2. 还没有执行到同步结点，或者故障结点还不是同步结点，可以重试
+     */
+    event.eventType = BSEvent::SERVICE_EXEC_FAILED_E6;
+    event.time = 1;
+    event.e6Info.instanceID = 1;
+    event.e6Info.sNodeID = 1; //Mark
+    action = alg.schedule(event, true);
+    qDebug() << "The result is:";
+    qDebug() << event.toString();
+    qDebug() << action.toString() << "\n";
 
     BSWorkFlow::Instance()->showSNodeList();
     BSWorkFlow::Instance()->showResourceList();

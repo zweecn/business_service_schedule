@@ -334,6 +334,32 @@ int BSWorkFlow::getResourceTotalQLevel(int period, int resType)
     return -1;
 }
 
+int BSWorkFlow::getResourceQLevel(int period, int instanceID, int resType)
+{
+    BSInstance & ins = bsInstanceList[instanceID];
+    int qLevel = 0;
+    for (int i = 0; i < bsRequirementQueue.size(); i++)
+    {
+        if (bsRequirementQueue[i].expectedPeriod == period
+                && bsRequirementQueue[i].customer == ins.requirementID)
+        {
+            qLevel = bsRequirementQueue[i].qLevel;
+            break;
+        }
+    }
+    int result = 0;
+    for (int i = 0; i < bsSNodeList.size(); i++)
+    {
+        if (bsSNodeList[i].resType == resType)
+        {
+            result = bsSNodeList[i].unitReqQLevel * qLevel;
+            break;
+        }
+    }
+//    qDebug() << "p=" << period << result;
+    return result;
+}
+
 int BSWorkFlow::getRequirementQLevel(int period, int instanceID)
 {
     for (int i = 0; i < bsRequirementQueue.size(); i++)
@@ -371,6 +397,34 @@ int BSWorkFlow::getRequirementTotalQLevel(int period)
         }
     }
     return sum;
+}
+
+int BSWorkFlow::getUnitRequirementResourceCost(int period)
+{
+    int sumCost = 0;
+    for (int i = 0; i < bsSNodeList.size(); i++)
+    {
+        int unitRes = bsSNodeList[i].unitReqQLevel;
+        int unitPrice = getResourcePrice(period, bsSNodeList[i].resType);
+        sumCost += unitRes * unitPrice;
+    }
+    return sumCost;
+}
+
+int BSWorkFlow::getRequirementFreeQLevel(int period)
+{
+    int maxFree = INT_MAX;
+    for (int i = 0; i < bsSNodeList.size(); i++)
+    {
+        int freeRes = getResourceTotalQLevel(period, bsSNodeList[i].resType);
+        int unitRes = bsSNodeList[i].unitReqQLevel;
+        // 最小那个活动所需要的资源决定最多能承受
+        if (maxFree > freeRes / unitRes)
+        {
+            maxFree = freeRes / unitRes;
+        }
+    }
+    return maxFree;
 }
 
 int BSWorkFlow::getSNodeUnitQLevel(int resType)

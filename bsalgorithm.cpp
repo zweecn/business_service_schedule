@@ -134,6 +134,9 @@ QList<BSAction> BSAlgorithm::subScheduleE4(const BSEvent &event)
     BSAction action1 = cancelInstances(event.time, event.e4Info.resType, event.e4Info.vQlevel);
     actions.append(action1);
 
+    BSAction action2 = cancelAndDelayNextPeriod(event.time, event.e4Info.resType, event.e4Info.vQlevel);
+    actions.append(action2);
+
     return actions;
 }
 
@@ -169,16 +172,16 @@ QList<BSAction> BSAlgorithm::subScheduleE5(const BSEvent &event)
         // [1] 每个需求都因为同步结点的延时而延时，加上延迟费用
         int totalQLevel = BSWorkFlow::Instance()->getRequirementTotalQLevel(0);
         sumCost += BSConfig::Instance()->getUnitTimeDelayCost() * timeDelay * totalQLevel;
-        qDebug() << BSConfig::Instance()->getUnitTimeDelayCost()
-                 << timeDelay << totalQLevel << "All is infrunced.";
+//        qDebug() << BSConfig::Instance()->getUnitTimeDelayCost()
+//                 << timeDelay << totalQLevel << "All is infrunced.";
     }
     else
     {
         // [1.1] 其他需求没有因为本实例的延时而延时，所以不需要加上它们的延时费用
         int currQLevel = BSWorkFlow::Instance()->getRequirementQLevel(0, insID);
         sumCost += BSConfig::Instance()->getUnitTimeDelayCost() * timeDelay * currQLevel;
-        qDebug() << BSConfig::Instance()->getUnitTimeDelayCost()
-                 << timeDelay << currQLevel << "Curr is infrunced.";
+//        qDebug() << BSConfig::Instance()->getUnitTimeDelayCost()
+//                 << timeDelay << currQLevel << "Curr is infrunced.";
     }
     action1.reward = -sumCost;
     actions.append(action1);
@@ -186,8 +189,8 @@ QList<BSAction> BSAlgorithm::subScheduleE5(const BSEvent &event)
     BSAction action2 = cancelInstance(event.time, event.e5Info.instanceID);
     actions.append(action2);
 
-//    BSAction action3 = delayNextPeriod(event.time, event.e5Info.instanceID);
-//    actions.append(action3);
+    BSAction action3 = delayNextPeriod(event.time, event.e5Info.instanceID);
+    actions.append(action3);
 
     return actions;
 }
@@ -226,12 +229,14 @@ BSAction BSAlgorithm::cancelInstances(int time, int resType, int vQLevel)
     int *cost = new int[allSize];
     memset(cost, 0, sizeof(int) * allSize);
     int minCost = INT_MAX;
+    int needAddRes = 0;
     QList<int> minChouse;
     for (int i = 0; i < allSize; i++)
     {
         QList<int> chouseInsList = isOne(i);
         int sumQLevel = 0;
         int sumCost = 0;
+        int freeRes = 0;
         for (int j = 0; j < chouseInsList.size(); j++)
         {
             int instanceID = chouseInsList[j];
@@ -245,26 +250,30 @@ BSAction BSAlgorithm::cancelInstances(int time, int resType, int vQLevel)
                     * BSWorkFlow::Instance()->getRequirementQLevel(0, instanceID);
             sumQLevel += BSWorkFlow::Instance()->getRequirementQLevel(0, instanceID);
             sumCost += standardCost + extraWTPCost + reparationCost;
+            freeRes += BSWorkFlow::Instance()->getResourceQLevel(0, instanceID, resType); // 0
         }
 
-        if (sumQLevel < requireVQLevel)
+        if (sumQLevel < requireVQLevel || freeRes < vQLevel - resTotalQLevel)
         {
             sumCost = INT_MAX;
         }
         cost[i] = sumCost;
         if (minCost > cost[i])
         {
+            needAddRes = vQLevel - freeRes;
             minCost = cost[i];
             minChouse = chouseInsList;
         }
     }
     delete[] cost;
-    // [4] 可以从候选资源里拿出一部分来，但是需要额外付钱
-    minCost += resTotalQLevel * BSWorkFlow::Instance()->getResourcePrice(0, resType);
+    // [4] 可以从候选资源里拿出一部分来，但是需要额外付钱 resTotalQLevel
+    minCost += needAddRes * BSWorkFlow::Instance()->getResourcePrice(0, resType);
     action.reward = -minCost;
     action.cancelInstanceInfo.instanceIDList = minChouse;
     // [*] 可以释放一些没有用过的资源
     action.cancelInstanceInfo.freeResourceList = freeResource(time, minChouse, resType);
+    action.cancelInstanceInfo.resourceAdd.resourceType = resType;
+    action.cancelInstanceInfo.resourceAdd.amount = needAddRes;
 
     return action;
 }
@@ -341,7 +350,7 @@ BSAction BSAlgorithm::retryInstance(int instanceID, int sNodeID)
     }
     else
     {
-        action.reward = BSWorkFlow::Instance()->getResourcePrice(0, instanceID, sNodeID);
+        action.reward = -BSWorkFlow::Instance()->getResourcePrice(0, instanceID, sNodeID);
     }
 
     action.retryInstanceInfo.instanceID = instanceID;
@@ -360,6 +369,75 @@ BSAction BSAlgorithm::forkNextPeriod(int time, int instanceID, int newQlevel, in
     BSAction action = delayNextPeriod(time, instanceID, req);
     //[3] 需要增加新增加的需求成功执行的标准价格和额外价格
     action.reward += BSConfig::Instance()->getUnitRPrice() * newQlevel + extraWTP;
+    return action;
+}
+
+BSAction BSAlgorithm::cancelAndDelayNextPeriod(int time, int resType, int vQLevel)
+{
+    BSAction action;
+    action.aType = BSAction::CANCEL_DELAY_NEXT_PEROID;
+
+    int resTotalQLevel = BSWorkFlow::Instance()->getResourceTotalQLevel(0, resType);
+    if (resTotalQLevel >= vQLevel) //Add resource
+    {
+        qDebug() << "BSAlgorithm::cancelInstance: no need to cancel instalces.";
+        return action;
+    }
+
+    int maxFreeQLevel = BSWorkFlow::Instance()->getRequirementFreeQLevel(1);
+
+    QList<BSInstance> & ins = BSWorkFlow::Instance()->bsInstanceList;
+    int allSize = (int)pow(2, ins.size());
+    int *cost = new int[allSize];
+    memset(cost, 0, sizeof(int) * allSize);
+    int minCost = INT_MAX;
+    int needAddRes = 0;
+    QList<int> minChouse;
+    for (int i = 0; i < allSize; i++)
+    {
+        QList<int> chouseInsList = isOne(i);
+        int sumQLevel = 0;
+        int sumCost = 0;
+        int freeRes = 0;
+        for (int j = 0; j < chouseInsList.size(); j++)
+        {
+            int instanceID = chouseInsList[j];
+            // [1] 延迟需求需要赔偿
+            int delayCost = BSConfig::Instance()->getUnitDelayCost()
+                    * BSWorkFlow::Instance()->getRequirementQLevel(0, instanceID);
+            // [2] 延迟到下一周期需要付新资源的钱
+            sumQLevel += BSWorkFlow::Instance()->getRequirementQLevel(0, instanceID);
+            int unitDelayResourceCost = BSWorkFlow::Instance()->getUnitRequirementResourceCost(1);
+            sumCost += delayCost + sumQLevel * unitDelayResourceCost;
+            int resQLevel = BSWorkFlow::Instance()->getResourceQLevel(0, instanceID, resType);
+            freeRes += resQLevel;
+//            qDebug() << resQLevel << freeRes; ;
+
+        }
+//        qDebug() << freeRes << vQLevel << resTotalQLevel;
+        // 如果选择的示例所需要的资源大于后一个周期的最大剩余资源
+        // 或 腾出来的资源不够资源减少量
+        if (sumQLevel > maxFreeQLevel || freeRes < vQLevel - resTotalQLevel)
+        {
+            sumCost = INT_MAX;
+        }
+        cost[i] = sumCost;
+        if (minCost > cost[i])
+        {
+            needAddRes = vQLevel - freeRes;
+            minCost = cost[i];
+            minChouse = chouseInsList;
+        }
+    }
+    delete[] cost;
+    // [4] 可以从候选资源里拿出一部分来，但是需要额外付钱
+    minCost += needAddRes * BSWorkFlow::Instance()->getResourcePrice(0, resType);
+    action.reward = - minCost;
+    action.cancelAndDelayInstanceInfo.instanceIDList = minChouse;
+    action.cancelAndDelayInstanceInfo.freeOrNeedResourceList = freeResource(time, minChouse, -1);
+    action.cancelAndDelayInstanceInfo.resourceAdd.resourceType = resType;
+    action.cancelAndDelayInstanceInfo.resourceAdd.amount = needAddRes;
+
     return action;
 }
 

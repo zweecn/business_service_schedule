@@ -31,6 +31,7 @@ private:
     BSAction forkNextPeriod(int time, int instanceID, int newQlevel, int extraWTP);
     BSAction delayNextPeriod(int time, int instanceID);
     BSAction delayNextPeriod(int time, int instanceID, const BSRequirement & req);
+    BSAction cancelAndDelayNextPeriod(int time, int resType, int vQLevel);
 
     QList<ResourceNode> freeResource(int time, QList<int> & chouseInstance, int exceptResType);
     QList<int> isOne(int num);

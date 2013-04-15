@@ -67,6 +67,9 @@ QString BSAction::toString()
                     .arg(cancelInstanceInfo.freeResourceList[i].amount);
         }
         res += QString(")");
+        res += QString("NeedAddRes:%1 Amt:%2")
+                .arg(cancelInstanceInfo.resourceAdd.resourceType)
+                .arg(cancelInstanceInfo.resourceAdd.amount);
     }
     else if (this->aType == BSAction::RETRY_SERVICE)
     {
@@ -89,6 +92,26 @@ QString BSAction::toString()
                     .arg(delayToNextPeriodInfo.freeResourceList[i].amount);
         }
         res += QString(")");
+    }
+    else if (this->aType == BSAction::CANCEL_DELAY_NEXT_PEROID)
+    {
+        res += QString(" Type:%1 (CancelIns:")
+                .arg("CANCEL_DELAY_NEXT_PEROID");
+        for (int i = 0; i < cancelAndDelayInstanceInfo.instanceIDList.size(); i++)
+        {
+            res += QString(" %1").arg(cancelAndDelayInstanceInfo.instanceIDList[i]);
+        }
+        res += QString(") (FreeOrNeedRes:");
+        for (int i = 0; i < cancelAndDelayInstanceInfo.freeOrNeedResourceList.size(); i++)
+        {
+            res += QString(" type:%1 Amt:%2")
+                    .arg(cancelAndDelayInstanceInfo.freeOrNeedResourceList[i].resourceType)
+                    .arg(cancelAndDelayInstanceInfo.freeOrNeedResourceList[i].amount);
+        }
+        res += QString(")");
+        res += QString("NeedAddRes:%1 Amt:%2")
+                .arg(cancelAndDelayInstanceInfo.resourceAdd.resourceType)
+                .arg(cancelAndDelayInstanceInfo.resourceAdd.amount);
     }
     res += QString(" Reward:%2]").arg(this->reward);
     return res;

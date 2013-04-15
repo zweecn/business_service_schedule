@@ -48,6 +48,14 @@ struct CancelInstanceInfo
 {
     QList<int> instanceIDList;
     QList<ResourceNode> freeResourceList;
+    ResourceNode resourceAdd;
+};
+
+struct CancelAndDelayInstanceInfo
+{
+    QList<int> instanceIDList;
+    QList<ResourceNode> freeOrNeedResourceList;
+    ResourceNode resourceAdd;
 };
 
 struct RetryInstanceInfo
@@ -82,6 +90,7 @@ public:
     CancelInstanceInfo cancelInstanceInfo;
     RetryInstanceInfo retryInstanceInfo;
     DelayToNextPeriodInfo delayToNextPeriodInfo;
+    CancelAndDelayInstanceInfo cancelAndDelayInstanceInfo;
 
     enum
     {
@@ -91,7 +100,8 @@ public:
         RESOURCE_TRANS_PLAN,
         CANCEL_INSTANCE,
         RETRY_SERVICE,
-        FORK_TO_NEXT_PEROID
+        FORK_TO_NEXT_PEROID,
+        CANCEL_DELAY_NEXT_PEROID
     };
 };
 

@@ -18,9 +18,12 @@ public:
     int getResourcePrice(int period, int resType);
     int getResourcePrice(int period, int instanceID, int sNodeID);
     int getResourceTotalQLevel(int peroid, int resType);
+    int getResourceQLevel(int period, int instanceID, int resType);
     int getRequirementQLevel(int period, int instanceID);
     int getRequirementWTP(int period, int instanceID);
     int getRequirementTotalQLevel(int period);
+    int getUnitRequirementResourceCost(int period);
+    int getRequirementFreeQLevel(int period);
     int getSNodeUnitQLevel(int resType);
     int getSNodeConcurrencyType(int sNodeID);
 
