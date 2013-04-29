@@ -51,7 +51,7 @@ struct CancelInstanceInfo
     ResourceNode resourceAdd;
 };
 
-struct CancelAndDelayInstanceInfo
+struct CancelToDelayInstanceInfo
 {
     QList<int> instanceIDList;
     QList<ResourceNode> freeOrNeedResourceList;
@@ -72,6 +72,34 @@ struct DelayToNextPeriodInfo
     QList<ResourceNode> freeResourceList;
 };
 
+struct ForkToNextPeriodInfo
+{
+    int instanceID;
+    BSRequirement nextRequirement;
+    QList<ResourceNode> freeResourceList;
+
+    ForkToNextPeriodInfo & operator =(const ForkToNextPeriodInfo & other)
+    {
+        if (this == &other)
+        {
+            return *this;
+        }
+        this->instanceID = other.instanceID;
+        this->nextRequirement = other.nextRequirement;
+        this->freeResourceList = other.freeResourceList;
+        return *this;
+    }
+
+    ForkToNextPeriodInfo & operator =(const DelayToNextPeriodInfo & other)
+    {
+        this->instanceID = other.instanceID;
+        this->nextRequirement = other.nextRequirement;
+        this->freeResourceList = other.freeResourceList;
+        return *this;
+    }
+};
+
+
 class BSAction
 {
 public:
@@ -81,26 +109,30 @@ public:
 
     int aid;
     int aType;
-    int reward;
+    int revenue;
+    int cost;
+    int profit;
 
     IgnoreInfo ignoreInfo;
     ForkInfo forkInfo;
+    ForkToNextPeriodInfo forkToNextPeriodInfo;
     ResourceAddInfo resourceAddInfo;
     ResourceTransInfo resourceTransInfo;
     CancelInstanceInfo cancelInstanceInfo;
     RetryInstanceInfo retryInstanceInfo;
     DelayToNextPeriodInfo delayToNextPeriodInfo;
-    CancelAndDelayInstanceInfo cancelAndDelayInstanceInfo;
+    CancelToDelayInstanceInfo cancelToDelayInstanceInfo;
 
     enum
     {
         IGNORE,
         FORK_INSTANCE,
+        FORK_NEXT_PERIOD,
         RESOURCE_ADD_PLAN,
         RESOURCE_TRANS_PLAN,
         CANCEL_INSTANCE,
         RETRY_SERVICE,
-        FORK_TO_NEXT_PEROID,
+        DELAY_TO_NEXT_PEROID,
         CANCEL_DELAY_NEXT_PEROID
     };
 };

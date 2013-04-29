@@ -45,9 +45,9 @@ BSAction BSAlgorithm::schedule(const BSEvent &event, bool printAllAction)
     int chouse = -1;
     for (int i = 0; i < actions.size(); i++)
     {
-        if (maxReward < actions[i].reward)
+        if (maxReward < actions[i].profit)
         {
-            maxReward = actions[i].reward;
+            maxReward = actions[i].profit;
             chouse = i;
         }
         if (printAllAction)
@@ -69,10 +69,11 @@ QList<BSAction> BSAlgorithm::subScheduleE1(const BSEvent &event)
     QList<BSAction> actions;
     BSAction ignoreAction;
     // [1] 当前顾客取消的赔偿
-    ignoreAction.reward = BSConfig::Instance()->getUnitCompensatePrice()
+    ignoreAction.revenue = BSConfig::Instance()->getUnitCompensatePrice()
             * event.e1Info.reqVLevel;
     // [2] 当前顾客取消无法获得标准价格
-    ignoreAction.reward -= event.e1Info.reqVLevel * BSConfig::Instance()->getUnitRPrice();
+    ignoreAction.cost = event.e1Info.reqVLevel * BSConfig::Instance()->getUnitRPrice();
+    ignoreAction.profit = ignoreAction.revenue - ignoreAction.cost;
     actions.append(ignoreAction);
 
     BSAction forkAction = forkNewInstance(event.time, event.e1Info.instanceID, event.e1Info.reqVLevel);
@@ -86,7 +87,9 @@ QList<BSAction> BSAlgorithm::subScheduleE2(const BSEvent &event)
     QList<BSAction> actions;
 
     BSAction action1;
-    action1.reward = 0;
+    action1.revenue = 0;
+    action1.cost = 0;
+    action1.profit = 0;
     action1.aType = BSAction::IGNORE;
     actions.append(action1);
 
@@ -113,7 +116,9 @@ QList<BSAction> BSAlgorithm::subScheduleE3(const BSEvent &event)
     QList<BSAction> actions;
 
     BSAction action1;
-    action1.reward = 0;
+    action1.profit = 0;
+    action1.cost = 0;
+    action1.revenue = 0;
     action1.aType = BSAction::IGNORE;
     actions.append(action1);
 
@@ -183,7 +188,9 @@ QList<BSAction> BSAlgorithm::subScheduleE5(const BSEvent &event)
 //        qDebug() << BSConfig::Instance()->getUnitTimeDelayCost()
 //                 << timeDelay << currQLevel << "Curr is infrunced.";
     }
-    action1.reward = -sumCost;
+    action1.revenue = 0;
+    action1.cost = sumCost;
+    action1.profit = -sumCost;
     actions.append(action1);
 
     BSAction action2 = cancelInstance(event.time, event.e5Info.instanceID);
@@ -268,7 +275,9 @@ BSAction BSAlgorithm::cancelInstances(int time, int resType, int vQLevel)
     delete[] cost;
     // [4] 可以从候选资源里拿出一部分来，但是需要额外付钱 resTotalQLevel
     minCost += needAddRes * BSWorkFlow::Instance()->getResourcePrice(0, resType);
-    action.reward = -minCost;
+    action.revenue = 0;
+    action.cost = minCost;
+    action.profit = -minCost;
     action.cancelInstanceInfo.instanceIDList = minChouse;
     // [*] 可以释放一些没有用过的资源
     action.cancelInstanceInfo.freeResourceList = freeResource(time, minChouse, resType);
@@ -297,7 +306,9 @@ BSAction BSAlgorithm::cancelInstance(int time, int instanceID)
     QList<int> cancelInsList;
     cancelInsList.append(instanceID);
 
-    action.reward = -sumCost;
+    action.revenue = 0;
+    action.cost = sumCost;
+    action.profit = -sumCost;
     action.cancelInstanceInfo.instanceIDList = cancelInsList;
     // [*] 可以释放一些没有用过的资源
     action.cancelInstanceInfo.freeResourceList = freeResource(time, cancelInsList, -1);
@@ -346,11 +357,13 @@ BSAction BSAlgorithm::retryInstance(int instanceID, int sNodeID)
             || firstSyncTime > ins[instanceID].sNodePlanList[firstSyncNodeID].startTime
             || 1 == BSWorkFlow::Instance()->getSNodeConcurrencyType(sNodeID))
     {
-        action.reward = - INT_MAX;
+        action.profit = - INT_MAX;
     }
     else
     {
-        action.reward = -BSWorkFlow::Instance()->getResourcePrice(0, instanceID, sNodeID);
+        action.revenue = 0;
+        action.cost = BSWorkFlow::Instance()->getResourcePrice(0, instanceID, sNodeID);
+        action.profit = action.revenue - action.cost;
     }
 
     action.retryInstanceInfo.instanceID = instanceID;
@@ -368,7 +381,10 @@ BSAction BSAlgorithm::forkNextPeriod(int time, int instanceID, int newQlevel, in
 
     BSAction action = delayNextPeriod(time, instanceID, req);
     //[3] 需要增加新增加的需求成功执行的标准价格和额外价格
-    action.reward += BSConfig::Instance()->getUnitRPrice() * newQlevel + extraWTP;
+    action.revenue += BSConfig::Instance()->getUnitRPrice() * newQlevel + extraWTP;
+    action.profit = action.revenue - action.cost;
+    action.aType = BSAction::FORK_NEXT_PERIOD;
+    action.forkToNextPeriodInfo = action.delayToNextPeriodInfo;
     return action;
 }
 
@@ -432,11 +448,13 @@ BSAction BSAlgorithm::cancelAndDelayNextPeriod(int time, int resType, int vQLeve
     delete[] cost;
     // [4] 可以从候选资源里拿出一部分来，但是需要额外付钱
     minCost += needAddRes * BSWorkFlow::Instance()->getResourcePrice(0, resType);
-    action.reward = - minCost;
-    action.cancelAndDelayInstanceInfo.instanceIDList = minChouse;
-    action.cancelAndDelayInstanceInfo.freeOrNeedResourceList = freeResource(time, minChouse, -1);
-    action.cancelAndDelayInstanceInfo.resourceAdd.resourceType = resType;
-    action.cancelAndDelayInstanceInfo.resourceAdd.amount = needAddRes;
+    action.revenue = 0;
+    action.cost = minCost;
+    action.profit = - minCost;
+    action.cancelToDelayInstanceInfo.instanceIDList = minChouse;
+    action.cancelToDelayInstanceInfo.freeOrNeedResourceList = freeResource(time, minChouse, -1);
+    action.cancelToDelayInstanceInfo.resourceAdd.resourceType = resType;
+    action.cancelToDelayInstanceInfo.resourceAdd.amount = needAddRes;
 
     return action;
 }
@@ -444,7 +462,7 @@ BSAction BSAlgorithm::cancelAndDelayNextPeriod(int time, int resType, int vQLeve
 BSAction BSAlgorithm::delayNextPeriod(int time, int instanceID)
 {
     BSAction action;
-    action.aType = BSAction::FORK_TO_NEXT_PEROID;
+    action.aType = BSAction::DELAY_TO_NEXT_PEROID;
     BSInstance & ins = BSWorkFlow::Instance()->bsInstanceList[instanceID];
     const BSRequirement & req = BSWorkFlow::Instance()->bsRequirementQueue[ins.requirementID];
     return delayNextPeriod(time, instanceID, req);
@@ -453,7 +471,7 @@ BSAction BSAlgorithm::delayNextPeriod(int time, int instanceID)
 BSAction BSAlgorithm::delayNextPeriod(int time, int instanceID, const BSRequirement & req)
 {
     BSAction action;
-    action.aType = BSAction::FORK_TO_NEXT_PEROID;
+    action.aType = BSAction::DELAY_TO_NEXT_PEROID;
     QList<BSSNode> & sNodeList = BSWorkFlow::Instance()->bsSNodeList;
     int sumCost = 0;
     for (int i = 0; i < sNodeList.size(); i++)
@@ -461,7 +479,7 @@ BSAction BSAlgorithm::delayNextPeriod(int time, int instanceID, const BSRequirem
         int freeRes = BSWorkFlow::Instance()->getResourceTotalQLevel(1, sNodeList[i].resType);
         if (sNodeList[i].unitReqQLevel * req.qLevel > freeRes)
         {
-            action.reward = - INT_MAX;
+            action.profit = - INT_MAX;
             return action;
         }
         sumCost += sNodeList[i].unitReqQLevel * req.qLevel
@@ -477,9 +495,11 @@ BSAction BSAlgorithm::delayNextPeriod(int time, int instanceID, const BSRequirem
     insList.append(instanceID);
     action.delayToNextPeriodInfo.freeResourceList = freeResource(time, insList, -1);
     // [1] 推迟到下一个周期的赔偿
-    action.reward = -BSConfig::Instance()->getUnitDelayCost() * req.qLevel;
+    action.cost = BSConfig::Instance()->getUnitDelayCost() * req.qLevel;
     // [2] 下一个周期需要多购买资源的费用
-    action.reward -= sumCost;
+    action.cost += sumCost;
+    action.revenue = 0;
+    action.profit = action.revenue - action.cost;
     return action;
 }
 
@@ -528,16 +548,17 @@ BSAction BSAlgorithm::addResource(int addReqVLevel, int extraWTP)
     if (totalResPrice != -1)
     {
         // [1] 标准费用
-        action.reward = BSConfig::Instance()->getUnitRPrice() * addReqVLevel;
+        action.revenue = BSConfig::Instance()->getUnitRPrice() * addReqVLevel;
         // [2] 用户需要增加新的需求所愿意额外付出的费用
-        action.reward += extraWTP;
+        action.revenue += extraWTP;
         // [3] 新的需求花费的资源成本
-        action.reward -= totalResPrice;
+        action.cost = totalResPrice;
+        action.profit = action.revenue - action.cost;
     }
     else
     {
         action.resourceAddInfo.resourceAddList.clear();
-        action.reward = - INT_MAX;
+        action.profit = - INT_MAX;
         qDebug() << "BSAlgorithm::addResource: Resource is not enough for the new requirement.";
     }
     return action;
@@ -606,7 +627,10 @@ BSAction BSAlgorithm::transResource(int addReqVLevel, int extraWTP)
 
     // [*] 转移资源所得到新收入=新需求所带来的标准收入+新需求的额外支付-这个动作带来的成本消耗
     // 从这里可以看到新的需求想要满足把其他的实例取消来满足的话，首先付的钱要足够赔付人家，才能执行这个动作
-    action.reward = BSConfig::Instance()->getUnitRPrice() * addReqVLevel + extraWTP - minCost;
+    //action.profit = BSConfig::Instance()->getUnitRPrice() * addReqVLevel + extraWTP - minCost;
+    action.revenue = BSConfig::Instance()->getUnitRPrice() * addReqVLevel + extraWTP;
+    action.cost = minCost;
+    action.profit = action.revenue - action.cost;
     int satisfyReq = 0;
     for (int i = 0; i < minChouse.size(); i++)
     {
@@ -633,7 +657,9 @@ BSAction BSAlgorithm::transResource(int addReqVLevel, int extraWTP)
             else
             {
                 qDebug() << "BSAlgorithm::transResource: Resource is not enough for the new requirement.";
-                action.reward = - INT_MAX;
+                action.profit = - INT_MAX;
+                action.revenue = 0;
+                action.cost = - INT_MAX;
                 break;
             }
         }
@@ -661,7 +687,7 @@ BSAction BSAlgorithm::forkNewInstance(int time, int currInstanceID, int freeReqV
     // Begin SyncNode, can not fork instance
     if (time >= beginSyncTime)
     {
-        action.reward = -INT_MAX;
+        action.profit = -INT_MAX;
         return action;
     }
 
@@ -683,15 +709,16 @@ BSAction BSAlgorithm::forkNewInstance(int time, int currInstanceID, int freeReqV
         action.forkInfo.instance.requirementID = req;
         action.forkInfo.instance.sNodePlanList = ins.sNodePlanList;
         // [1] fork出来后新的额外支付的价格
-        action.reward = BSWorkFlow::Instance()->bsRequirementQueue[req].wtp;
+        action.revenue = BSWorkFlow::Instance()->bsRequirementQueue[req].wtp;
         // [2] 新的需求的标准价格
-        action.reward += BSWorkFlow::Instance()->bsRequirementQueue[req].qLevel
+        action.revenue += BSWorkFlow::Instance()->bsRequirementQueue[req].qLevel
                 * BSConfig::Instance()->getUnitRPrice();
         // [3] 当前顾客取消的赔偿
-        action.reward += BSConfig::Instance()->getUnitCompensatePrice()
+        action.revenue += BSConfig::Instance()->getUnitCompensatePrice()
                 * freeReqVLevel;
         // [4] 当前顾客取消无法获得标准价格
-        action.reward -= freeReqVLevel * BSConfig::Instance()->getUnitRPrice();
+        action.cost = freeReqVLevel * BSConfig::Instance()->getUnitRPrice();
+        action.profit = action.revenue - action.cost;
     }
 
     return action;
@@ -715,7 +742,7 @@ BSAction BSAlgorithm::forkNewInstance(int time, int currInstanceID, int addReqVL
     // Begin SyncNode, can not fork instance
     if (time >= beginSyncTime)
     {
-        action.reward = -INT_MAX;
+        action.profit = -INT_MAX;
         return action;
     }
 
@@ -737,16 +764,17 @@ BSAction BSAlgorithm::forkNewInstance(int time, int currInstanceID, int addReqVL
         action.forkInfo.instance.sNodePlanList = ins.sNodePlanList;
 
         // [1] 标准费用
-        action.reward = BSConfig::Instance()->getUnitRPrice() * addReqVLevel;
+        action.revenue = BSConfig::Instance()->getUnitRPrice() * addReqVLevel;
         // [2] 用户需要增加新的需求所愿意额外付出的费用
-        action.reward += extraWTP;
+        action.revenue += extraWTP;
         // [3] 新的需求花费的资源成本
-        action.reward -= totalResPrice;
+        action.cost = totalResPrice;
+        action.profit = action.revenue - action.cost;
     }
     else
     {
         qDebug() << "BSAlgorithm::forkNewInstance: Resource is not enough for the new requirement.";
-        action.reward = -INT_MAX;
+        action.profit = -INT_MAX;
     }
 
     return action;

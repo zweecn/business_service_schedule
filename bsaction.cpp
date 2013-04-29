@@ -7,7 +7,9 @@ BSAction::BSAction()
 {
     aid = 0;
     aType = IGNORE;
-    reward = -INT_MAX;
+    revenue = 0;
+    cost = -INT_MAX;
+    profit = -INT_MAX;
 }
 
 QString BSAction::toString()
@@ -78,10 +80,10 @@ QString BSAction::toString()
                 .arg(retryInstanceInfo.instanceID)
                 .arg(retryInstanceInfo.sNodeID);
     }
-    else if (this->aType == BSAction::FORK_TO_NEXT_PEROID)
+    else if (this->aType == BSAction::DELAY_TO_NEXT_PEROID)
     {
         res += QString(" Type:%1 Ins:%2 NextReq:%3")
-                .arg("FORK_TO_NEXT_PEROID")
+                .arg("DELAY_TO_NEXT_PEROID")
                 .arg(delayToNextPeriodInfo.instanceID)
                 .arg(delayToNextPeriodInfo.nextRequirement.toString());
         res += QString(") (FreeRes:");
@@ -93,26 +95,44 @@ QString BSAction::toString()
         }
         res += QString(")");
     }
+    else if (this->aType == BSAction::FORK_NEXT_PERIOD)
+    {
+        res += QString(" Type:%1 Ins:%2 NextReq:%3")
+                .arg("FORK_NEXT_PERIOD")
+                .arg(forkToNextPeriodInfo.instanceID)
+                .arg(forkToNextPeriodInfo.nextRequirement.toString());
+        res += QString(") (FreeRes:");
+        for (int i = 0; i < forkToNextPeriodInfo.freeResourceList.size(); i++)
+        {
+            res += QString(" type:%1 Amt:%2")
+                    .arg(forkToNextPeriodInfo.freeResourceList[i].resourceType)
+                    .arg(forkToNextPeriodInfo.freeResourceList[i].amount);
+        }
+        res += QString(")");
+    }
     else if (this->aType == BSAction::CANCEL_DELAY_NEXT_PEROID)
     {
         res += QString(" Type:%1 (CancelIns:")
                 .arg("CANCEL_DELAY_NEXT_PEROID");
-        for (int i = 0; i < cancelAndDelayInstanceInfo.instanceIDList.size(); i++)
+        for (int i = 0; i < cancelToDelayInstanceInfo.instanceIDList.size(); i++)
         {
-            res += QString(" %1").arg(cancelAndDelayInstanceInfo.instanceIDList[i]);
+            res += QString(" %1").arg(cancelToDelayInstanceInfo.instanceIDList[i]);
         }
         res += QString(") (FreeOrNeedRes:");
-        for (int i = 0; i < cancelAndDelayInstanceInfo.freeOrNeedResourceList.size(); i++)
+        for (int i = 0; i < cancelToDelayInstanceInfo.freeOrNeedResourceList.size(); i++)
         {
             res += QString(" type:%1 Amt:%2")
-                    .arg(cancelAndDelayInstanceInfo.freeOrNeedResourceList[i].resourceType)
-                    .arg(cancelAndDelayInstanceInfo.freeOrNeedResourceList[i].amount);
+                    .arg(cancelToDelayInstanceInfo.freeOrNeedResourceList[i].resourceType)
+                    .arg(cancelToDelayInstanceInfo.freeOrNeedResourceList[i].amount);
         }
         res += QString(")");
         res += QString("NeedAddRes:%1 Amt:%2")
-                .arg(cancelAndDelayInstanceInfo.resourceAdd.resourceType)
-                .arg(cancelAndDelayInstanceInfo.resourceAdd.amount);
+                .arg(cancelToDelayInstanceInfo.resourceAdd.resourceType)
+                .arg(cancelToDelayInstanceInfo.resourceAdd.amount);
     }
-    res += QString(" Reward:%2]").arg(this->reward);
+    res += QString(" Revenue:%1 Cost:%2 Profit:%3]")
+            .arg(this->revenue)
+            .arg(this->cost)
+            .arg(this->profit);
     return res;
 }

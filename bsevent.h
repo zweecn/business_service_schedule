@@ -23,7 +23,7 @@ struct E2Info
 // New requirement
 struct E3Info
 {
-    int instanceID;
+    int instanceID; //这里其实无用，只是为了取同步结点
     BSRequirement requirement;
 };
 
