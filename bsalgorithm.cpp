@@ -105,6 +105,39 @@ QList<BSAction> BSAlgorithm::scheduleActions(const BSEvent &event)
     return actions;
 }
 
+BSAction BSAlgorithm::ignoreSchedule(const BSEvent & event)
+{
+    QList<BSAction> actions = scheduleActions(event);
+    if (actions.size() <= 0)
+    {
+        qWarning() << __FILE__ << __LINE__ << "Ignore schedule can not get actions.";
+        exit(-1);
+    }
+    srand(time(NULL));
+    int ignoreChouse = -1;
+    int cancelChouse = -1;
+    for (int i = 0; i < actions.size(); i++)
+    {
+        if (actions[i].aType == BSAction::IGNORE)
+        {
+            ignoreChouse = i;
+            break;
+        }
+        else if (actions[i].aType == BSAction::CANCEL_INSTANCE)
+        {
+            cancelChouse = i;
+        }
+    }
+    if (ignoreChouse != -1)
+        return actions[ignoreChouse];
+    if (cancelChouse == -1)
+    {
+        qWarning() << __FILE__ << __LINE__ << "Ignore schedule, no cancel chouse.";
+        exit(-1);
+    }
+    return actions[cancelChouse];
+}
+
 BSAction BSAlgorithm::randomSchedule(const BSEvent & event)
 {
     QList<BSAction> actions = scheduleActions(event);
@@ -115,6 +148,50 @@ BSAction BSAlgorithm::randomSchedule(const BSEvent & event)
     }
     srand(time(NULL));
     int chouse = rand() % actions.size();
+    return actions[chouse];
+}
+
+BSAction BSAlgorithm::minCostSchedule(const BSEvent & event)
+{
+    QList<BSAction> actions = scheduleActions(event);
+    if (actions.size() <= 0)
+    {
+        qWarning() << __FILE__ << __LINE__ << "MinCost schedule can not get actions.";
+        exit(-1);
+    }
+    srand(time(NULL));
+    int chouse = 0;
+    int minCost = INT_MAX;
+    for (int i = 0; i < actions.size(); i++)
+    {
+        if (minCost > actions[i].cost)
+        {
+            minCost = actions[i].cost;
+            chouse = i;
+        }
+    }
+    return actions[chouse];
+}
+
+BSAction BSAlgorithm::maxProfitSchedule(const BSEvent & event)
+{
+    QList<BSAction> actions = scheduleActions(event);
+    if (actions.size() <= 0)
+    {
+        qWarning() << __FILE__ << __LINE__ << "MaxProfit schedule can not get actions.";
+        exit(-1);
+    }
+    srand(time(NULL));
+    int chouse = 0;
+    int maxProfit = -INT_MAX;
+    for (int i = 0; i < actions.size(); i++)
+    {
+        if (maxProfit < actions[i].profit)
+        {
+            maxProfit = actions[i].profit;
+            chouse = i;
+        }
+    }
     return actions[chouse];
 }
 

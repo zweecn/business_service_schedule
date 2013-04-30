@@ -25,7 +25,8 @@ SOURCES += main.cpp\
     bsaction.cpp \
     singleton.cpp \
     bsalgorithm.cpp \
-    bsconfig.cpp
+    bsconfig.cpp \
+    bstest.cpp
 
 HEADERS  += \
     bsresource.h \
@@ -39,7 +40,8 @@ HEADERS  += \
     bsaction.h \
     singleton.h \
     bsalgorithm.h \
-    bsconfig.h
+    bsconfig.h \
+    bstest.h
 
 OTHER_FILES += \
     ../BusinessUC-build-desktop-Qt_4_7_4__4_7_4__Debug/bs_snode.conf \
@@ -48,6 +50,12 @@ OTHER_FILES += \
     ../BusinessUC-build-desktop-Qt_4_7_4__4_7_4__Debug/bs_requirement.conf \
     ../BusinessUC-build-desktop-Qt_4_7_4__4_7_4__Debug/bs_instance.conf \
     ../BusinessUC-build-desktop-Qt_4_7_4__4_7_4__Debug/bs_reward.conf
+
+
+
+
+
+
 
 
 

@@ -13,7 +13,11 @@ public:
 
     BSAction schedule(const BSEvent & event, bool printAllAction);
     QList<BSAction> scheduleActions(const BSEvent &event);
+
+    BSAction ignoreSchedule(const BSEvent & event);
     BSAction randomSchedule(const BSEvent & event);
+    BSAction minCostSchedule(const BSEvent & event);
+    BSAction maxProfitSchedule(const BSEvent & event);
 
     bool recovery(BSEvent & event, BSAction & action);
 
