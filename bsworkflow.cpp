@@ -32,6 +32,18 @@ BSWorkFlow::BSWorkFlow()
     readBSInstanceList();
 }
 
+void BSWorkFlow::reset()
+{
+    bsSNodeList.clear();
+    bsResourceList.clear();
+    bsRequirementQueue.clear();
+    bsInstanceList.clear();
+
+    readBSSNodeList();
+    readBSResourceList();
+    readBSRequirementQueue();
+    readBSInstanceList();
+}
 
 bool BSWorkFlow::readBSSNodeList()
 {
@@ -454,6 +466,38 @@ void BSWorkFlow::setResourceQLevel(int period, int resType, int totalQLevel)
             res.totalQLevel = totalQLevel;
             break;
         }
+    }
+}
+
+void BSWorkFlow::reduceResource(int period, int resType, int qlevel)
+{
+    for (int i = 0; i < bsResourceList.size(); i++)
+    {
+        BSResource & res = bsResourceList[i];
+        if (res.period == period && res.resType == resType)
+        {
+            res.totalQLevel -= qlevel;
+            if (res.totalQLevel < 0)
+            {
+                res.totalQLevel = 0;
+            }
+            break;
+        }
+    }
+}
+
+void BSWorkFlow::addResource(int period, int resType, int qlevel)
+{
+    reduceResource(period, resType, -qlevel);
+}
+
+void BSWorkFlow::reduceRequirement(int instanceID, int qLevel)
+{
+    int rID = bsInstanceList[instanceID].requirementID;
+    bsRequirementQueue[rID].qLevel -= qLevel;
+    if (bsRequirementQueue[rID].qLevel < 0)
+    {
+        bsRequirementQueue[rID].qLevel = 0;
     }
 }
 

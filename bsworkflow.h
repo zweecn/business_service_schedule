@@ -14,6 +14,7 @@ class BSWorkFlow
 {
 public:
     static BSWorkFlow * Instance();
+    void reset();
 
     int getResourcePrice(int period, int resType);
     int getResourcePrice(int period, int instanceID, int sNodeID);
@@ -28,6 +29,9 @@ public:
     int getSNodeConcurrencyType(int sNodeID);
     int getResourceTypeSize();
 
+    void reduceRequirement(int instanceID, int qLevel);
+    void reduceResource(int period, int resType, int qlevel);
+    void addResource(int period, int resType, int qlevel);
     void setResourceQLevel(int period, int resType, int totalQLevel);
 
     void showInstanceList();

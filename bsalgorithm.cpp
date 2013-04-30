@@ -118,6 +118,234 @@ BSAction BSAlgorithm::randomSchedule(const BSEvent & event)
     return actions[chouse];
 }
 
+bool BSAlgorithm::recovery(BSEvent & event, BSAction & action)
+{
+    if (event.eventType == BSEvent::REQUIREMENT_CANCEL_REDUCE_E1)
+    {
+        int insID = event.e1Info.instanceID;
+        int reqID = BSWorkFlow::Instance()->bsInstanceList[insID].requirementID;
+        BSRequirement &req = BSWorkFlow::Instance()->bsRequirementQueue[reqID];
+        req.qLevel -= event.e1Info.reqVLevel;
+        if (req.qLevel <= 0)
+        {
+            req.qLevel = 0;
+            req.setFree(false);
+        }
+
+        if (action.aType == BSAction::IGNORE)
+        {
+        }
+        else if (action.aType == BSAction::FORK_INSTANCE)
+        {
+            BSWorkFlow::Instance()->bsInstanceList.append(action.forkInfo.instance);
+        }
+    }
+    else if (event.eventType == BSEvent::REQUIREMENT_ADD_E2)
+    {
+        if (action.aType == BSAction::IGNORE)
+        {
+        }
+        else if (action.aType == BSAction::RESOURCE_ADD_PLAN)
+        {
+            BSWorkFlow::Instance()->bsRequirementQueue[event.e2Info.instanceID].qLevel
+                    += event.e2Info.reqVLevel;
+            BSWorkFlow::Instance()->bsRequirementQueue[event.e2Info.instanceID].wtp
+                    += event.e2Info.extraWTP;
+            for (int i = 0; i < action.resourceAddInfo.resourceAddList.size(); i++)
+            {
+                int resType = action.resourceAddInfo.resourceAddList[i].resourceType;
+                int amount = action.resourceAddInfo.resourceAddList[i].amount;
+                BSWorkFlow::Instance()->reduceResource(0, resType, amount);
+            }
+        }
+        else if (action.aType == BSAction::RESOURCE_TRANS_PLAN)
+        {
+            BSWorkFlow::Instance()->bsRequirementQueue[event.e2Info.instanceID].qLevel
+                    += event.e2Info.reqVLevel;
+            BSWorkFlow::Instance()->bsRequirementQueue[event.e2Info.instanceID].wtp
+                    += event.e2Info.extraWTP;
+
+            for (int i = 0; i < action.resourceTransInfo.resourceTransList.size(); i++)
+            {
+                int insID = action.resourceTransInfo.resourceTransList[i].instanceID;
+                int qLevel = action.resourceTransInfo.resourceTransList[i].qLevel;
+                BSWorkFlow::Instance()->reduceRequirement(insID, qLevel);
+            }
+            for (int i = 0; i < action.resourceTransInfo.resourceAddList.size(); i++)
+            {
+                int resType = action.resourceTransInfo.resourceAddList[i].resourceType;
+                int amount = action.resourceTransInfo.resourceAddList[i].amount;
+                BSWorkFlow::Instance()->reduceResource(0, resType, amount);
+            }
+        }
+        else if (action.aType == BSAction::FORK_NEXT_PERIOD)
+        {
+            action.forkToNextPeriodInfo.nextRequirement.customer
+                    = BSWorkFlow::Instance()->bsRequirementQueue.size();
+            BSWorkFlow::Instance()->bsRequirementQueue.append(action.forkToNextPeriodInfo.nextRequirement);
+
+            BSInstance ins = BSWorkFlow::Instance()->bsInstanceList[event.e2Info.instanceID];
+            ins.instanceID = BSWorkFlow::Instance()->bsInstanceList.size();
+            ins.requirementID = action.forkToNextPeriodInfo.nextRequirement.customer;
+            BSWorkFlow::Instance()->bsInstanceList.append(ins);
+
+            for (int i = 0; i < action.forkToNextPeriodInfo.freeResourceList.size(); i++)
+            {
+                int resType = action.forkToNextPeriodInfo.freeResourceList[i].resourceType;
+                int amount = action.forkToNextPeriodInfo.freeResourceList[i].amount;
+                BSWorkFlow::Instance()->addResource(0, resType, amount);
+            }
+        }
+    }
+    else if (event.eventType == BSEvent::REQUIREMENT_NEW_E3)
+    {
+        if (action.aType == BSAction::IGNORE)
+        {
+        }
+        else if (action.aType == BSAction::FORK_INSTANCE)
+        {
+            event.e3Info.requirement.customer
+                    = BSWorkFlow::Instance()->bsRequirementQueue.size();
+            BSWorkFlow::Instance()->bsRequirementQueue.append(event.e3Info.requirement);
+
+            BSInstance & ins = action.forkInfo.instance;
+            ins.requirementID = event.e3Info.requirement.customer;
+            ins.instanceID = BSWorkFlow::Instance()->bsInstanceList.size();
+            BSWorkFlow::Instance()->bsInstanceList.append(ins);
+
+        }
+        else if (action.aType == BSAction::FORK_NEXT_PERIOD)
+        {
+            action.forkToNextPeriodInfo.nextRequirement.customer
+                    = BSWorkFlow::Instance()->bsRequirementQueue.size();
+            BSWorkFlow::Instance()->bsRequirementQueue.append(action.forkToNextPeriodInfo.nextRequirement);
+
+            BSInstance ins = BSWorkFlow::Instance()->bsInstanceList[event.e3Info.instanceID];
+            ins.instanceID = BSWorkFlow::Instance()->bsInstanceList.size();
+            ins.requirementID = action.forkToNextPeriodInfo.nextRequirement.customer;
+            BSWorkFlow::Instance()->bsInstanceList.append(ins);
+
+            for (int i = 0; i < action.forkToNextPeriodInfo.freeResourceList.size(); i++)
+            {
+                int resType = action.forkToNextPeriodInfo.freeResourceList[i].resourceType;
+                int amount = action.forkToNextPeriodInfo.freeResourceList[i].amount;
+                BSWorkFlow::Instance()->addResource(0, resType, amount);
+            }
+        }
+    }
+    else if (event.eventType == BSEvent::RESOURCE_REDUCE_E4)
+    {
+        int resType = event.e4Info.resType;
+        int vQLevel = event.e4Info.vQlevel;
+        BSWorkFlow::Instance()->reduceResource(0, resType, vQLevel);
+
+        if (action.aType == BSAction::IGNORE)
+        {
+        }
+        else if (action.aType == BSAction::CANCEL_INSTANCE)
+        {
+            for (int i = 0; i < action.cancelInstanceInfo.instanceIDList.size(); i++)
+            {
+                int insID = action.cancelInstanceInfo.instanceIDList[i];
+                int reqID = BSWorkFlow::Instance()->bsInstanceList[insID].requirementID;
+                BSWorkFlow::Instance()->bsRequirementQueue[reqID].reset();
+            }
+            for (int i = 0; i < action.cancelInstanceInfo.freeResourceList.size(); i++)
+            {
+                int resType = action.cancelInstanceInfo.freeResourceList[i].resourceType;
+                int amount = action.cancelInstanceInfo.freeResourceList[i].amount;
+                BSWorkFlow::Instance()->addResource(0, resType, amount);
+            }
+            int resType = action.cancelInstanceInfo.resourceAdd.resourceType;
+            int amount = action.cancelInstanceInfo.resourceAdd.amount;
+            BSWorkFlow::Instance()->reduceResource(0, resType, amount);
+        }
+        else if (action.aType == BSAction::CANCEL_DELAY_NEXT_PEROID)
+        {
+            for (int i = 0; i < action.cancelToDelayInstanceInfo.instanceIDList.size(); i++)
+            {
+                int insID = action.cancelToDelayInstanceInfo.instanceIDList[i];
+                int reqID = BSWorkFlow::Instance()->bsInstanceList[insID].requirementID;
+                BSWorkFlow::Instance()->bsRequirementQueue[reqID].expectedPeriod = 1;
+                BSWorkFlow::Instance()->bsRequirementQueue[reqID].setFree(true);
+            }
+            for (int i = 0; i < action.cancelToDelayInstanceInfo.freeOrNeedResourceList.size(); i++)
+            {
+                int resType = action.cancelToDelayInstanceInfo.freeOrNeedResourceList[i].resourceType;
+                int amount = action.cancelToDelayInstanceInfo.freeOrNeedResourceList[i].amount;
+                BSWorkFlow::Instance()->addResource(0, resType, amount);
+            }
+            int resType = action.cancelToDelayInstanceInfo.resourceAdd.resourceType;
+            int amount = action.cancelToDelayInstanceInfo.resourceAdd.amount;
+            BSWorkFlow::Instance()->reduceResource(0, resType, amount);
+        }
+    }
+    else if (event.eventType == BSEvent::SERVICE_EXEC_DELAY_E5)
+    {
+        if (action.aType == BSAction::IGNORE)
+        {
+        }
+        else if (action.aType == BSAction::DELAY_TO_NEXT_PEROID)
+        {
+            int insID = action.delayToNextPeriodInfo.instanceID;
+            int reqID = BSWorkFlow::Instance()->bsInstanceList[insID].requirementID;
+            BSWorkFlow::Instance()->bsRequirementQueue[reqID].expectedPeriod = 1;
+            BSWorkFlow::Instance()->bsRequirementQueue[reqID].setFree(true);
+
+            for (int i = 0; i < action.delayToNextPeriodInfo.freeResourceList.size(); i++)
+            {
+                int resType = action.delayToNextPeriodInfo.freeResourceList[i].resourceType;
+                int amount = action.delayToNextPeriodInfo.freeResourceList[i].amount;
+                BSWorkFlow::Instance()->addResource(0, resType, amount);
+            }
+        }
+        else if (action.aType == BSAction::CANCEL_INSTANCE)
+        {
+            for (int i = 0; i < action.cancelInstanceInfo.instanceIDList.size(); i++)
+            {
+                int insID = action.cancelInstanceInfo.instanceIDList[i];
+                int reqID = BSWorkFlow::Instance()->bsInstanceList[insID].requirementID;
+                BSWorkFlow::Instance()->bsRequirementQueue[reqID].reset();
+            }
+            for (int i = 0; i < action.cancelInstanceInfo.freeResourceList.size(); i++)
+            {
+                int resType = action.cancelInstanceInfo.freeResourceList[i].resourceType;
+                int amount = action.cancelInstanceInfo.freeResourceList[i].amount;
+                BSWorkFlow::Instance()->addResource(0, resType, amount);
+            }
+            int resType = action.cancelInstanceInfo.resourceAdd.resourceType;
+            int amount = action.cancelInstanceInfo.resourceAdd.amount;
+            BSWorkFlow::Instance()->reduceResource(0, resType, amount);
+        }
+    }
+    else if (event.eventType == BSEvent::SERVICE_EXEC_FAILED_E6)
+    {
+        if (action.aType == BSAction::CANCEL_INSTANCE)
+        {
+            for (int i = 0; i < action.cancelInstanceInfo.instanceIDList.size(); i++)
+            {
+                int insID = action.cancelInstanceInfo.instanceIDList[i];
+                int reqID = BSWorkFlow::Instance()->bsInstanceList[insID].requirementID;
+                BSWorkFlow::Instance()->bsRequirementQueue[reqID].reset();
+            }
+            for (int i = 0; i < action.cancelInstanceInfo.freeResourceList.size(); i++)
+            {
+                int resType = action.cancelInstanceInfo.freeResourceList[i].resourceType;
+                int amount = action.cancelInstanceInfo.freeResourceList[i].amount;
+                BSWorkFlow::Instance()->addResource(0, resType, amount);
+            }
+            int resType = action.cancelInstanceInfo.resourceAdd.resourceType;
+            int amount = action.cancelInstanceInfo.resourceAdd.amount;
+            BSWorkFlow::Instance()->reduceResource(0, resType, amount);
+        }
+        else if (action.aType == BSAction::RETRY_SERVICE)
+        {
+        }
+    }
+
+    return true;
+}
+
 QList<BSAction> BSAlgorithm::subScheduleE1(const BSEvent &event)
 {
     QList<BSAction> actions;
@@ -150,9 +378,10 @@ QList<BSAction> BSAlgorithm::subScheduleE2(const BSEvent &event)
     BSAction action2 = addResource(event.e2Info.reqVLevel, event.e2Info.extraWTP);
     actions.append(action2);
 
-    BSAction action3 = forkNewInstance(event.eventTime, event.e2Info.instanceID,
-                                 event.e2Info.reqVLevel, event.e2Info.extraWTP);
-    actions.append(action3);
+// Same as add resource
+//    BSAction action3 = forkNewInstance(event.eventTime, event.e2Info.instanceID,
+//                                 event.e2Info.reqVLevel, event.e2Info.extraWTP);
+//    actions.append(action3);
 
 
     BSAction action4 = transResource(event.e2Info.reqVLevel, event.e2Info.extraWTP);

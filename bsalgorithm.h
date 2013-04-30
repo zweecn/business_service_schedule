@@ -15,6 +15,8 @@ public:
     QList<BSAction> scheduleActions(const BSEvent &event);
     BSAction randomSchedule(const BSEvent & event);
 
+    bool recovery(BSEvent & event, BSAction & action);
+
 private:
     QList<BSAction> subScheduleE1(const BSEvent & event);
     QList<BSAction> subScheduleE2(const BSEvent & event);
