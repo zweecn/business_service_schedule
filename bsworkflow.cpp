@@ -456,3 +456,8 @@ void BSWorkFlow::setResourceQLevel(int period, int resType, int totalQLevel)
         }
     }
 }
+
+int BSWorkFlow::getResourceTypeSize()
+{
+    return resourceSize;
+}

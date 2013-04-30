@@ -1,15 +1,22 @@
+#include <cstdlib>
+#include <ctime>
+#include <QDebug>
+#include <cassert>
+
 #include "bsevent.h"
+#include "bsworkflow.h"
+#include "bsconfig.h"
 
 BSEvent::BSEvent()
 {
-    time = -1;
+    eventTime = -1;
     eventType = BSEvent::NOT_EVENT;
 }
 
 QString BSEvent::toString()
 {
     QString res = QString("[Event: Time:%1 ")
-            .arg(this->time);
+            .arg(this->eventTime);
     if (this->eventType == BSEvent::REQUIREMENT_CANCEL_REDUCE_E1)
     {
         res += QString("Type:%1 Ins:%2 ReqVLevel:%3")
@@ -54,7 +61,89 @@ QString BSEvent::toString()
                 .arg(this->e6Info.instanceID)
                 .arg(this->e6Info.sNodeID);
     }
+    else
+    {
+        res += QString("Type:%1").arg(eventType);
+    }
 
     res = res.trimmed().append("]");
     return res;
+}
+
+QList<BSEvent> BSEvent::randomEvent()
+{
+    QList<BSEvent> eventList;
+    int nodeSize = BSWorkFlow::Instance()->bsSNodeList.size();
+    int insSize = BSWorkFlow::Instance()->bsInstanceList.size();
+    int maxTime = 0;
+    for (int i = 0; i < insSize; i++)
+    {
+        int t = BSWorkFlow::Instance()->bsInstanceList[i].sNodePlanList.last().endTime;
+        if (maxTime < t)
+        {
+            maxTime = t;
+        }
+    }
+    int seed = time(NULL);
+    srand(seed);
+    int reqID = BSWorkFlow::Instance()->bsRequirementQueue.size();
+    for (int i = 0; i < nodeSize; i++)
+    {
+        BSEvent event;
+        int instanceID = rand() % insSize;
+        BSInstance & ins = BSWorkFlow::Instance()->bsInstanceList[instanceID];
+        int startTime = ins.sNodePlanList[i].startTime;
+        int endTime = ins.sNodePlanList[i].endTime;
+        assert(endTime - startTime > 0);
+        event.eventTime = rand() % (endTime - startTime) + startTime;
+        event.eventType = rand() % EVENT_SIZE;
+
+        if (event.eventType == BSEvent::REQUIREMENT_CANCEL_REDUCE_E1)
+        {
+            event.e1Info.instanceID = instanceID;
+            int maxReqVLevel = BSWorkFlow::Instance()->getRequirementQLevel(0, instanceID);
+            event.e1Info.reqVLevel = rand() % maxReqVLevel;
+        }
+        else if (event.eventType == BSEvent::REQUIREMENT_ADD_E2)
+        {
+            event.e2Info.instanceID = instanceID;
+            event.e2Info.reqVLevel = rand() % 5;
+            event.e2Info.extraWTP = (rand() % 10) * BSConfig::Instance()->getUnitRPrice();
+        }
+        else if (event.eventType == BSEvent::REQUIREMENT_NEW_E3)
+        {
+            event.e3Info.instanceID = instanceID;
+            event.e3Info.requirement.customer = (reqID++);
+            event.e3Info.requirement.expectedPeriod = 0;
+            event.e3Info.requirement.setFree(true);
+            event.e3Info.requirement.qLevel = rand() % 5;
+            event.e3Info.requirement.wtp = (rand() % 10) * BSConfig::Instance()->getUnitRPrice();
+        }
+        else if (event.eventType == BSEvent::RESOURCE_REDUCE_E4)
+        {
+            event.e4Info.resType = rand() % BSWorkFlow::Instance()->getResourceTypeSize();
+            int total = BSWorkFlow::Instance()->getResourceTotalQLevel(0, event.e4Info.resType);
+            event.e4Info.vQlevel = (rand() % total + 1) * 2;
+        }
+        else if (event.eventType == BSEvent::SERVICE_EXEC_DELAY_E5)
+        {
+            event.e5Info.instanceID = instanceID;
+            event.e5Info.sNodeID = i;
+            event.e5Info.timeDelay = rand() % 10;
+        }
+        else if (event.eventType == BSEvent::SERVICE_EXEC_FAILED_E6)
+        {
+            event.e6Info.instanceID = instanceID;
+            event.e6Info.sNodeID = i;
+        }
+        else
+        {
+            qDebug() << "NOT" << __FILE__ << __LINE__;
+        }
+
+        qDebug() << event.toString();
+        eventList.append(event);
+    }
+
+    return eventList;
 }

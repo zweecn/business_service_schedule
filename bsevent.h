@@ -2,6 +2,7 @@
 #define BSEVENT_H
 
 #include <QString>
+#include <QList>
 
 #include "bsrequirement.h"
 
@@ -55,7 +56,9 @@ public:
     BSEvent();
     QString toString();
 
-    int time;
+    static QList<BSEvent> randomEvent();
+
+    int eventTime;
     int eventType;
     E1Info e1Info;
     E2Info e2Info;
@@ -72,7 +75,8 @@ public:
         REQUIREMENT_NEW_E3,
         RESOURCE_REDUCE_E4,
         SERVICE_EXEC_DELAY_E5,
-        SERVICE_EXEC_FAILED_E6
+        SERVICE_EXEC_FAILED_E6,
+        EVENT_SIZE = 6
     };
 };
 

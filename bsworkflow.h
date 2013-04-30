@@ -26,6 +26,7 @@ public:
     int getRequirementFreeQLevel(int period);
     int getSNodeUnitQLevel(int resType);
     int getSNodeConcurrencyType(int sNodeID);
+    int getResourceTypeSize();
 
     void setResourceQLevel(int period, int resType, int totalQLevel);
 

@@ -76,7 +76,7 @@ QList<BSAction> BSAlgorithm::subScheduleE1(const BSEvent &event)
     ignoreAction.profit = ignoreAction.revenue - ignoreAction.cost;
     actions.append(ignoreAction);
 
-    BSAction forkAction = forkNewInstance(event.time, event.e1Info.instanceID, event.e1Info.reqVLevel);
+    BSAction forkAction = forkNewInstance(event.eventTime, event.e1Info.instanceID, event.e1Info.reqVLevel);
     actions.append(forkAction);
 
     return actions;
@@ -96,7 +96,7 @@ QList<BSAction> BSAlgorithm::subScheduleE2(const BSEvent &event)
     BSAction action2 = addResource(event.e2Info.reqVLevel, event.e2Info.extraWTP);
     actions.append(action2);
 
-    BSAction action3 = forkNewInstance(event.time, event.e2Info.instanceID,
+    BSAction action3 = forkNewInstance(event.eventTime, event.e2Info.instanceID,
                                  event.e2Info.reqVLevel, event.e2Info.extraWTP);
     actions.append(action3);
 
@@ -104,7 +104,7 @@ QList<BSAction> BSAlgorithm::subScheduleE2(const BSEvent &event)
     BSAction action4 = transResource(event.e2Info.reqVLevel, event.e2Info.extraWTP);
     actions.append(action4);
 
-    BSAction action5 = forkNextPeriod(event.time, event.e2Info.instanceID,
+    BSAction action5 = forkNextPeriod(event.eventTime, event.e2Info.instanceID,
                                       event.e2Info.reqVLevel, event.e2Info.extraWTP);
     actions.append(action5);
 
@@ -122,11 +122,11 @@ QList<BSAction> BSAlgorithm::subScheduleE3(const BSEvent &event)
     action1.aType = BSAction::IGNORE;
     actions.append(action1);
 
-    BSAction action2 = forkNewInstance(event.time, event.e3Info.instanceID,
+    BSAction action2 = forkNewInstance(event.eventTime, event.e3Info.instanceID,
                        event.e3Info.requirement.qLevel, event.e3Info.requirement.wtp);
     actions.append(action2);
 
-    BSAction action3 = forkNextPeriod(event.time, event.e3Info.instanceID,
+    BSAction action3 = forkNextPeriod(event.eventTime, event.e3Info.instanceID,
                    event.e3Info.requirement.qLevel, event.e3Info.requirement.wtp);
     actions.append(action3);
 
@@ -136,10 +136,10 @@ QList<BSAction> BSAlgorithm::subScheduleE3(const BSEvent &event)
 QList<BSAction> BSAlgorithm::subScheduleE4(const BSEvent &event)
 {
     QList<BSAction> actions;
-    BSAction action1 = cancelInstances(event.time, event.e4Info.resType, event.e4Info.vQlevel);
+    BSAction action1 = cancelInstances(event.eventTime, event.e4Info.resType, event.e4Info.vQlevel);
     actions.append(action1);
 
-    BSAction action2 = cancelAndDelayNextPeriod(event.time, event.e4Info.resType, event.e4Info.vQlevel);
+    BSAction action2 = cancelAndDelayNextPeriod(event.eventTime, event.e4Info.resType, event.e4Info.vQlevel);
     actions.append(action2);
 
     return actions;
@@ -193,10 +193,10 @@ QList<BSAction> BSAlgorithm::subScheduleE5(const BSEvent &event)
     action1.profit = -sumCost;
     actions.append(action1);
 
-    BSAction action2 = cancelInstance(event.time, event.e5Info.instanceID);
+    BSAction action2 = cancelInstance(event.eventTime, event.e5Info.instanceID);
     actions.append(action2);
 
-    BSAction action3 = delayNextPeriod(event.time, event.e5Info.instanceID);
+    BSAction action3 = delayNextPeriod(event.eventTime, event.e5Info.instanceID);
     actions.append(action3);
 
     return actions;
@@ -208,7 +208,7 @@ QList<BSAction> BSAlgorithm::subScheduleE6(const BSEvent &event)
     BSAction action1 = retryInstance(event.e6Info.instanceID, event.e6Info.sNodeID);
     actions.append(action1);
 
-    BSAction action2 = cancelInstance(event.time, event.e6Info.instanceID);
+    BSAction action2 = cancelInstance(event.eventTime, event.e6Info.instanceID);
     actions.append(action2);
     return actions;
 }

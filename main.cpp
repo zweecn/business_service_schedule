@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
 //         * 1. 下一周期的资源够迁移到下一周期的，可以取消部分当前的，迁移到下一周期
 //         */
 //    event.eventType = BSEvent::RESOURCE_REDUCE_E4;
-//    event.time = 10;
+//    event.eventTime = 10;
 //    event.e4Info.resType = 2;
 //    event.e4Info.vQlevel = 56;
 //    action = alg.schedule(event, true);
@@ -235,10 +235,12 @@ int main(int argc, char *argv[])
 //    qDebug() << event.toString();
 //    qDebug() << action.toString() << "\n";
 
-    BSWorkFlow::Instance()->showSNodeList();
-    BSWorkFlow::Instance()->showResourceList();
-    BSWorkFlow::Instance()->showInstanceList();
-    BSWorkFlow::Instance()->showRequirementQueue();
+    BSEvent::randomEvent();
+
+//    BSWorkFlow::Instance()->showSNodeList();
+//    BSWorkFlow::Instance()->showResourceList();
+//    BSWorkFlow::Instance()->showInstanceList();
+//    BSWorkFlow::Instance()->showRequirementQueue();
 
     return 0;
 }
