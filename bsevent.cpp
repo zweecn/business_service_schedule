@@ -141,7 +141,7 @@ QList<BSEvent> BSEvent::randomEvent()
             qDebug() << "NOT" << __FILE__ << __LINE__;
         }
 
-        qDebug() << event.toString();
+//        qDebug() << event.toString();
         eventList.append(event);
     }
 

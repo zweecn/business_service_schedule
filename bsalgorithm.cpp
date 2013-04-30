@@ -4,6 +4,8 @@
 #include <qmath.h>
 #include <iostream>
 #include <cassert>
+#include <cstdlib>
+#include <ctime>
 
 #include "bsalgorithm.h"
 #include "bsworkflow.h"
@@ -61,6 +63,58 @@ BSAction BSAlgorithm::schedule(const BSEvent &event, bool printAllAction)
         BSAction action;
         return action;
     }
+    return actions[chouse];
+}
+
+QList<BSAction> BSAlgorithm::scheduleActions(const BSEvent &event)
+{
+    QList<BSAction> actions;
+    if (event.eventType == BSEvent::REQUIREMENT_CANCEL_REDUCE_E1)
+    {
+        actions = subScheduleE1(event);
+    }
+    else if (event.eventType == BSEvent::REQUIREMENT_ADD_E2)
+    {
+        actions = subScheduleE2(event);
+    }
+    else if (event.eventType == BSEvent::REQUIREMENT_NEW_E3)
+    {
+        actions = subScheduleE3(event);
+    }
+    else if (event.eventType == BSEvent::RESOURCE_REDUCE_E4)
+    {
+        actions = subScheduleE4(event);
+    }
+    else if (event.eventType == BSEvent::SERVICE_EXEC_DELAY_E5)
+    {
+        actions = subScheduleE5(event);
+    }
+    else if (event.eventType == BSEvent::SERVICE_EXEC_FAILED_E6)
+    {
+        actions = subScheduleE6(event);
+    }
+
+    for (int i = 0; i < actions.size(); i++)
+    {
+        if (actions[i].profit == -INT_MAX)
+        {
+            actions.removeAt(i);
+            i--;
+        }
+    }
+    return actions;
+}
+
+BSAction BSAlgorithm::randomSchedule(const BSEvent & event)
+{
+    QList<BSAction> actions = scheduleActions(event);
+    if (actions.size() <= 0)
+    {
+        qWarning() << __FILE__ << __LINE__ << "Random schedule can not get actions.";
+        exit(-1);
+    }
+    srand(time(NULL));
+    int chouse = rand() % actions.size();
     return actions[chouse];
 }
 
@@ -141,6 +195,14 @@ QList<BSAction> BSAlgorithm::subScheduleE4(const BSEvent &event)
 
     BSAction action2 = cancelAndDelayNextPeriod(event.eventTime, event.e4Info.resType, event.e4Info.vQlevel);
     actions.append(action2);
+
+    if (action1.profit == -INT_MAX && action2.profit == -INT_MAX)
+    {
+        BSAction action3;
+        action3.aType = BSAction::IGNORE;
+        action3.revenue = action3.cost = action3.profit = 0;
+        actions.append(action3);
+    }
 
     return actions;
 }

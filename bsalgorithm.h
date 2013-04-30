@@ -12,6 +12,8 @@ public:
     BSAlgorithm();
 
     BSAction schedule(const BSEvent & event, bool printAllAction);
+    QList<BSAction> scheduleActions(const BSEvent &event);
+    BSAction randomSchedule(const BSEvent & event);
 
 private:
     QList<BSAction> subScheduleE1(const BSEvent & event);

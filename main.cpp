@@ -235,7 +235,14 @@ int main(int argc, char *argv[])
 //    qDebug() << event.toString();
 //    qDebug() << action.toString() << "\n";
 
-    BSEvent::randomEvent();
+    QList<BSEvent> eventList = BSEvent::randomEvent();
+    for (int i = 0; i < eventList.size(); i++)
+    {
+        qDebug() << i;
+        qDebug() << eventList[i].toString();
+        action = alg.randomSchedule(eventList[i]);
+        qDebug() << action.toString();
+    }
 
 //    BSWorkFlow::Instance()->showSNodeList();
 //    BSWorkFlow::Instance()->showResourceList();
