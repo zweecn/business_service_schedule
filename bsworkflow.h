@@ -34,6 +34,7 @@ public:
     void addResource(int period, int resType, int qlevel);
     void setResourceQLevel(int period, int resType, int totalQLevel);
 
+    void showWorkFlowInfo();
     void showInstanceList();
     void showRequirementQueue();
     void showSNodeList();

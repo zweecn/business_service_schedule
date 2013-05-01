@@ -6,6 +6,9 @@
 #include <cstdio>
 #include <cmath>
 #include <engine.h>
+#include <QTextCodec>
+#include <QFile>
+#include <QTime>
 
 #include "bsmainwidget.h"
 #include "bsworkflow.h"
@@ -18,22 +21,47 @@
 #include "bssnodeplan.h"
 #include "bstest.h"
 
+void customMessageHandler(QtMsgType type, const char* msg)
+{
+    QString txt;
+    switch(type)
+    {
+    case QtDebugMsg:
+        txt = QString("Debug: %1").arg(msg);
+        break;
+    case QtWarningMsg:
+        txt = QString("Warning: %1").arg(msg);
+        break;
+    case QtCriticalMsg:
+        txt = QString("Critical: %1").arg(msg);
+        break;
+    case QtFatalMsg:
+        txt = QString("Critical: %1").arg(msg);
+        abort();
+    }
+    QFile outFile("bs.log");
+    outFile.open(QIODevice::WriteOnly | QIODevice::Append);
+    QTextStream ts(&outFile);
+    ts << txt << endl;
+}
+
 int main(int argc, char *argv[])
 {
-    //    QApplication a(argc, argv);
-    //    BSMainWidget w;
-    //    w.show();
-    //    return a.exec();
+    QApplication a(argc, argv);
+    QTextCodec *gbk = QTextCodec::codecForName("GBK");
+    QTextCodec::setCodecForTr(gbk);
+    QTextCodec::setCodecForCStrings(gbk);
+    QTextCodec::setCodecForLocale(gbk);
+    QTextCodec::setCodecForTr(gbk);
+    QTextCodec::setCodecForLocale(gbk);
+    QTextCodec::setCodecForCStrings(gbk);
 
-
-
-    BSTest t;
-    t.runTest2();
-
-//    BSWorkFlow::Instance()->showSNodeList();
-//    BSWorkFlow::Instance()->showResourceList();
-//    BSWorkFlow::Instance()->showInstanceList();
-//    BSWorkFlow::Instance()->showRequirementQueue();
+    qInstallMsgHandler(customMessageHandler);
+    qDebug() << "DateTime:"
+             << QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss");
+    BSMainWidget w;
+    w.show();
+    return a.exec();
 
     return 0;
 }

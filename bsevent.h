@@ -54,6 +54,7 @@ class BSEvent
 {
 public:
     BSEvent();
+    QString name();
     QString toString();
 
     static QList<BSEvent> randomEvent();

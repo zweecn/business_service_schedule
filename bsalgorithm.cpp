@@ -52,10 +52,17 @@ BSAction BSAlgorithm::schedule(const BSEvent &event, bool printAllAction)
             maxReward = actions[i].profit;
             chouse = i;
         }
-        if (printAllAction)
+    }
+
+    if (printAllAction)
+    {
+        qDebug() << "--------------------------------------------------------------------";
+        qDebug() << "No" << "ActionType" << "ActionDetail";
+        for (int i = 0; i < actions.size(); i++)
         {
-            qDebug() << i << actions[i].toString();
+            qDebug() << i << actions[i].name() << actions[i].toString();
         }
+        qDebug() << "--------------------------------------------------------------------";
     }
 
     if (!(chouse >= 0 && chouse < actions.size()))

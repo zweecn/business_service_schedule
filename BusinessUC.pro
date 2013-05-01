@@ -49,7 +49,9 @@ OTHER_FILES += \
     ../BusinessUC-build-desktop-Qt_4_7_4__4_7_4__Debug/bs_nodecount.conf \
     ../BusinessUC-build-desktop-Qt_4_7_4__4_7_4__Debug/bs_requirement.conf \
     ../BusinessUC-build-desktop-Qt_4_7_4__4_7_4__Debug/bs_instance.conf \
-    ../BusinessUC-build-desktop-Qt_4_7_4__4_7_4__Debug/bs_reward.conf
+    ../BusinessUC-build-desktop-Qt_4_7_4__4_7_4__Debug/bs_reward.conf \
+    ../BusinessUC-build-desktop-Qt_4_7_4__4_7_4__Debug/bs.log
+
 
 
 

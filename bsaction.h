@@ -104,7 +104,7 @@ class BSAction
 {
 public:
     BSAction();
-
+    QString name();
     QString toString();
 
     int aid;

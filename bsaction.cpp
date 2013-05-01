@@ -12,6 +12,47 @@ BSAction::BSAction()
     profit = -INT_MAX;
 }
 
+QString BSAction::name()
+{
+    if (this->aType == BSAction::IGNORE)
+    {
+        return ("A1:IGNORE");
+    }
+    else if (this->aType == BSAction::FORK_INSTANCE)
+    {
+        return ("A2:FORK_INSTANCE");
+    }
+    else if (this->aType == BSAction::RESOURCE_ADD_PLAN)
+    {
+        return ("A3:RESOURCE_ADD_PLAN");
+    }
+    else if (this->aType == BSAction::RESOURCE_TRANS_PLAN)
+    {
+        return ("A5:RESOURCE_TRANS_PLAN");
+    }
+    else if (this->aType == BSAction::CANCEL_INSTANCE)
+    {
+        return ("A6:CANCEL_INSTANCE");
+    }
+    else if (this->aType == BSAction::RETRY_SERVICE)
+    {
+        return ("A9:RETRY_SERVICE");
+    }
+    else if (this->aType == BSAction::DELAY_TO_NEXT_PEROID)
+    {
+        return ("A8:DELAY_TO_NEXT_PEROID");
+    }
+    else if (this->aType == BSAction::FORK_NEXT_PERIOD)
+    {
+        return ("A4:FORK_NEXT_PERIOD");
+    }
+    else if (this->aType == BSAction::CANCEL_DELAY_NEXT_PEROID)
+    {
+        return ("A7:CANCEL_DELAY_NEXT_PEROID");
+    }
+    return ("NOT_ACTION");
+}
+
 QString BSAction::toString()
 {
     QString res = QString("[Action:%1").arg(aid);
@@ -101,7 +142,7 @@ QString BSAction::toString()
                 .arg("FORK_NEXT_PERIOD")
                 .arg(forkToNextPeriodInfo.instanceID)
                 .arg(forkToNextPeriodInfo.nextRequirement.toString());
-        res += QString(") (FreeRes:");
+        res += QString(" (FreeRes:");
         for (int i = 0; i < forkToNextPeriodInfo.freeResourceList.size(); i++)
         {
             res += QString(" type:%1 Amt:%2")

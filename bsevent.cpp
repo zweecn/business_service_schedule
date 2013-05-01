@@ -13,6 +13,36 @@ BSEvent::BSEvent()
     eventType = BSEvent::NOT_EVENT;
 }
 
+QString BSEvent::name()
+{
+    if (this->eventType == BSEvent::REQUIREMENT_CANCEL_REDUCE_E1)
+    {
+         return ("E1:REQUIREMENT_CANCEL_REDUCE");
+    }
+    else if (this->eventType == BSEvent::REQUIREMENT_ADD_E2)
+    {
+        return ("E2:REQUIREMENT_ADD");
+    }
+    else if (this->eventType == BSEvent::REQUIREMENT_NEW_E3)
+    {
+        return ("E3:REQUIREMENT_NEW");
+    }
+    else if (this->eventType == BSEvent::RESOURCE_REDUCE_E4)
+    {
+        return ("E4:RESOURCE_REDUCE");
+    }
+    else if (this->eventType == BSEvent::SERVICE_EXEC_DELAY_E5)
+    {
+        return ("E5:SERVICE_EXEC_DELAY");
+    }
+    else if (this->eventType == BSEvent::SERVICE_EXEC_FAILED_E6)
+    {
+        return ("E6:SERVICE_EXEC_FAILED");
+    }
+
+    return ("NOT_EVENT");
+}
+
 QString BSEvent::toString()
 {
     QString res = QString("[Event: Time:%1 ")
@@ -87,15 +117,18 @@ QList<BSEvent> BSEvent::randomEvent()
     int seed = time(NULL);
     srand(seed);
     int reqID = BSWorkFlow::Instance()->bsRequirementQueue.size();
-    for (int i = 0; i < nodeSize; i++)
+//    for (int nodeID = 0; nodeID < nodeSize; nodeID++)
+    int eventTime = 0;
+    for (int i = 0; i < nodeSize*2; i++)
     {
+        int nodeID = i/2;
         BSEvent event;
         int instanceID = rand() % insSize;
         BSInstance & ins = BSWorkFlow::Instance()->bsInstanceList[instanceID];
-        int startTime = ins.sNodePlanList[i].startTime;
-        int endTime = ins.sNodePlanList[i].endTime;
+        int startTime = ins.sNodePlanList[nodeID].startTime;
+        int endTime = ins.sNodePlanList[nodeID].endTime;
         assert(endTime - startTime > 0);
-        event.eventTime = rand() % (endTime - startTime) + startTime;
+        event.eventTime = eventTime = rand() % (endTime - startTime) + 2 + eventTime;
         event.eventType = rand() % EVENT_SIZE;
 
         if (event.eventType == BSEvent::REQUIREMENT_CANCEL_REDUCE_E1)
@@ -128,13 +161,13 @@ QList<BSEvent> BSEvent::randomEvent()
         else if (event.eventType == BSEvent::SERVICE_EXEC_DELAY_E5)
         {
             event.e5Info.instanceID = instanceID;
-            event.e5Info.sNodeID = i;
+            event.e5Info.sNodeID = nodeID;
             event.e5Info.timeDelay = rand() % 10;
         }
         else if (event.eventType == BSEvent::SERVICE_EXEC_FAILED_E6)
         {
             event.e6Info.instanceID = instanceID;
-            event.e6Info.sNodeID = i;
+            event.e6Info.sNodeID = nodeID;
         }
         else
         {

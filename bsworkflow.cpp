@@ -5,7 +5,7 @@
 #include <QTextStream>
 #include <QTextCodec>
 #include <QStringList>
-
+#include <QDateTime>
 #include <iostream>
 
 BSWorkFlow* BSWorkFlow::_instance = 0;
@@ -277,39 +277,51 @@ bool BSWorkFlow::readBSInstanceList()
     return true;
 }
 
+void BSWorkFlow::showWorkFlowInfo()
+{
+    qDebug() << "----------------------------------------------------------------";
+    qDebug() << "DateTime:"
+             << QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss");
+    showSNodeList();
+    showResourceList();
+    showInstanceList();
+    showRequirementQueue();
+    qDebug() << "----------------------------------------------------------------";
+}
+
 void BSWorkFlow::showInstanceList()
 {
-    std::cout << "Instance list is:\n";
+    qDebug() << "Instance list is:";
     for (int i = 0; i < bsInstanceList.size(); i++)
     {
-        std::cout << bsInstanceList[i].toString().toStdString() << std::endl;
+        qDebug() << bsInstanceList[i].toString();
     }
 }
 
 void BSWorkFlow::showRequirementQueue()
 {
-    std::cout << "Requirement queue is:\n";
+    qDebug() << "Requirement queue is:";
     for (int i = 0; i < bsRequirementQueue.size(); i++)
     {
-        std::cout << bsRequirementQueue[i].toString().toStdString() << std::endl;
+        qDebug() << bsRequirementQueue[i].toString();
     }
 }
 
 void BSWorkFlow::showSNodeList()
 {
-    std::cout << "SNode list is:\n";
+    qDebug() << "SNode list is:";
     for (int i = 0; i < bsSNodeList.size(); i++)
     {
-        std::cout << bsSNodeList[i].toString().toStdString() << std::endl;
+        qDebug() << bsSNodeList[i].toString();
     }
 }
 
 void BSWorkFlow::showResourceList()
 {
-    std::cout << "Resource list is:\n";
+    qDebug() << "Resource list is:";
     for (int i = 0; i < bsResourceList.size(); i++)
     {
-        std::cout << bsResourceList[i].toString().toStdString() << std::endl;
+        qDebug() << bsResourceList[i].toString();
     }
 }
 
