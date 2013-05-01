@@ -27,6 +27,8 @@ BSTest::~BSTest()
 
 void BSTest::runTest1()
 {
+    qDebug() << "====================================================================";
+    qDebug() << "BSTest::runTest1()..." << __FILE__ << __LINE__;
     BSAlgorithm alg;
     BSEvent event;
     BSAction action;
@@ -268,11 +270,15 @@ void BSTest::runTest1()
     qDebug() << "EventType" << "EventDetail" << "ActionType" << "ActionDetail";
     qDebug() << event.name() << event.toString() << action.name() << action.toString();
     qDebug() << "--------------------------------------------------------------------";
+
+    qDebug() << "BSTest::runTest1() Finished." << __FILE__ << __LINE__;
     qDebug() << "====================================================================";
 }
 
 void BSTest::runTest2()
 {
+    qDebug() << "====================================================================";
+    qDebug() << "BSTest::runTest2()..." << __FILE__ << __LINE__;
     /*
      *   开始算法仿真，伪随机
     **/
@@ -523,12 +529,70 @@ void BSTest::runTest2()
     memcpy(mxGetPr(_profitMaxProfit), profitMaxProfit, eventList.size()*sizeof(double));
     engPutVariable(ep, "profitMaxProfit", _profitMaxProfit);
 
-    engEvalString(ep, "cd E:\\Dev\\MATLAB7\\work\\business_uc; test2( t,revenueIgnore,revenueRandom,revenueMinCost,revenueMaxProfit,costIgnore,costRandom,costMinCost,costMaxProfit,profitIgnore,profitRandom,profitMinCost,profitMaxProfit );");
-//    engEvalString(ep, "t");
-//    engEvalString(ep, "cd E:\\Dev\\MATLAB7\\work\\business_uc; test( t,revenueIgnore,revenueRandom,revenueMinCost,revenueMaxProfit);");
-//    qDebug() << buffer;
+    QString matlabCmd("cd E:\\Dev\\MATLAB7\\work\\business_uc; test2( t,revenueIgnore,revenueRandom,revenueMinCost,revenueMaxProfit,costIgnore,costRandom,costMinCost,costMaxProfit,profitIgnore,profitRandom,profitMinCost,profitMaxProfit );");
+    engEvalString(ep, matlabCmd.toStdString().c_str());
 
+    // Make matlab code
+    QString tString("t = [");
+    QString revenueIgnoreString("revenueIgnore = [");
+    QString revenueRandomString("revenueRandom = [");
+    QString revenueMinCostString("revenueMinCost = [");
+    QString revenueMaxProfitString("revenueMaxProfit = [");
+    QString costIgnoreString("costIgnore = [");
+    QString costRandomString("costRandom = [");
+    QString costMinCostString("costMinCost = [");
+    QString costMaxProfitString("costMaxProfit = [");
+    QString profitIgnoreString("profitIgnore = [");
+    QString profitRandomString("profitRandom = [");
+    QString profitMinCostString("profitMinCost = [");
+    QString profitMaxProfitString("profitMaxProfit = [");
+    for (int i = 0; i < eventList.size(); i++)
+    {
+        tString += QString("%1 ").arg(eventList[i].eventTime);
+        revenueIgnoreString += QString("%1 ").arg(revenueIgnore[i]);
+        revenueRandomString += QString("%1 ").arg(revenueRandom[i]);
+        revenueMinCostString += QString("%1 ").arg(revenueMinCost[i]);
+        revenueMaxProfitString += QString("%1 ").arg(revenueMaxProfit[i]);
+        costIgnoreString += QString("%1 ").arg(costIgnore[i]);
+        costRandomString += QString("%1 ").arg(costRandom[i]);
+        costMinCostString += QString("%1 ").arg(costMinCost[i]);
+        costMaxProfitString += QString("%1 ").arg(costMaxProfit[i]);
+        profitIgnoreString += QString("%1 ").arg(profitIgnore[i]);
+        profitRandomString += QString("%1 ").arg(profitRandom[i]);
+        profitMinCostString += QString("%1 ").arg(profitMinCost[i]);
+        profitMaxProfitString += QString("%1 ").arg(profitMaxProfit[i]);
+    }
+    tString = tString.trimmed() + "]; ";
+    revenueIgnoreString = revenueIgnoreString.trimmed() + "]; ";
+    revenueRandomString = revenueRandomString.trimmed() + "]; ";
+    revenueMinCostString = revenueMinCostString.trimmed() + "]; ";
+    revenueMaxProfitString = revenueMaxProfitString.trimmed() + "]; ";
+    costIgnoreString = costIgnoreString.trimmed() + "]; ";
+    costRandomString = costRandomString.trimmed() + "]; ";
+    costMinCostString = costMinCostString.trimmed() + "]; ";
+    costMaxProfitString = costMaxProfitString.trimmed() + "]; ";
+    profitIgnoreString = profitIgnoreString.trimmed() + "]; ";
+    profitRandomString = profitRandomString.trimmed() + "]; ";
+    profitMinCostString = profitMinCostString.trimmed() + "]; ";
+    profitMaxProfitString = profitMaxProfitString.trimmed() + "]; ";
 
+    QString matlabCode = tString
+                 + revenueIgnoreString
+                 + revenueRandomString
+                 + revenueMinCostString
+                 + revenueMaxProfitString
+                 + costIgnoreString
+                 + costRandomString
+                 + costMinCostString
+                 + costMaxProfitString
+                 + profitIgnoreString
+                 + profitRandomString
+                 + profitMinCostString
+                 + profitMaxProfitString
+                 + matlabCmd;
+    qDebug() << "Matlab code: " << matlabCode;
+
+    // Destory val
     mxDestroyArray(_t);
     mxDestroyArray(_revenueIgnore);
     mxDestroyArray(_revenueRandom);
@@ -560,4 +624,6 @@ void BSTest::runTest2()
     delete[] profitMinCost;
     delete[] profitMaxProfit;
 
+    qDebug() << "BSTest::runTest2() Finished." << __FILE__ << __LINE__;
+    qDebug() << "====================================================================";
 }

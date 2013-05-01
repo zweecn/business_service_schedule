@@ -52,18 +52,22 @@ void BSMainWidget::matlabTest1()
 {
     test1Button->setEnabled(false);
     QString dateTime = QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss");
+    qDebug() << "BSMainWidget::matlabTest1()..." << __FILE__ << __LINE__;
     qDebug() << "DateTime:" << dateTime;
     logLabel->setText(QString("<p>DateTime: %1</p> <p>LogFile: ./bs.log</p>").arg(dateTime));
     test.runTest1();
     test1Button->setEnabled(true);
+    qDebug() << "BSMainWidget::matlabTest1() finished." << __FILE__ << __LINE__;
 }
 
 void BSMainWidget::matlabTest2()
 {
     test2Button->setEnabled(false);
     QString dateTime = QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss");
+    qDebug() << "BSMainWidget::matlabTest2()..." << __FILE__ << __LINE__;
     qDebug() << "DateTime:" << dateTime;
     logLabel->setText(QString("<p>DateTime: %1</p> <p>LogFile: ./bs.log</p>").arg(dateTime));
     test.runTest2();
     test2Button->setEnabled(true);
+    qDebug() << "BSMainWidget::matlabTest2() finished." << __FILE__ << __LINE__;
 }

@@ -45,6 +45,14 @@ void customMessageHandler(QtMsgType type, const char* msg)
     ts << txt << endl;
 }
 
+void printExitInfo()
+{
+    qDebug() << "main() finished." << __FILE__ << __LINE__;
+    QString dateTime = QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss");
+    qDebug() << "DateTime:" << dateTime;
+    qDebug() << "##########################################################################";
+}
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
@@ -57,11 +65,15 @@ int main(int argc, char *argv[])
     QTextCodec::setCodecForCStrings(gbk);
 
     qInstallMsgHandler(customMessageHandler);
-    qDebug() << "DateTime:"
-             << QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss");
+
+    qDebug() << "##########################################################################";
+    qDebug() << "main()..." << __FILE__ << __LINE__;
+    QString dateTime = QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss");
+    qDebug() << "DateTime:" << dateTime;
+
     BSMainWidget w;
     w.show();
-    return a.exec();
 
-    return 0;
+    atexit(printExitInfo);
+    return a.exec();
 }
