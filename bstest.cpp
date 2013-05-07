@@ -638,6 +638,7 @@ void BSTest::runTest3()
     BSAction action;
     QList<BSAction> allAction;
 
+    // subplot 1
     event.eventType = BSEvent::REQUIREMENT_ADD_E2;
     event.eventTime = 1;
     event.e2Info.instanceID = 2;
@@ -645,9 +646,8 @@ void BSTest::runTest3()
     event.e2Info.extraWTP = 2000; // Mark
 
     int xSize = 10;
-    double x = 1;
-    BSConfig::Instance()->setUnitRPrice(1000);
-    int unitRPrice = BSConfig::Instance()->getUnitRPrice();
+    const int unitRPrice = BSConfig::Instance()->getUnitRPrice();
+    const int unitRCancelCost = BSConfig::Instance()->getUnitRCancelCost();
     QList<double> unitRCancelCost_unitRPrice;
     QList<int> actionNameList;
     QList<int> actionProfitList;
@@ -655,11 +655,9 @@ void BSTest::runTest3()
     QList<int> resourceAddProfitList;
     QList<int> resourceTransProfitList;
     QList<int> forkNextProfitList;
-
-//    qDebug() << "k =unitRCancelCost / unitRPrice Action IgnoreProfit ResourceAddProfit ResourceTransProfit ForkNextProfit";
     for (int i = 0; i <= 1.5 * xSize; i++)
     {
-        double k = x * i / xSize;
+        double k = (double) i / xSize;
         int unitRCancelCost = unitRPrice * k;
         unitRCancelCost_unitRPrice.append(k);
 
@@ -733,11 +731,107 @@ void BSTest::runTest3()
     _resTrans = _resTrans.trimmed().append("];");
     _forkNext = _forkNext.trimmed().append("];");
 
+    // subplot 2
+    event.eventType = BSEvent::REQUIREMENT_ADD_E2;
+    event.eventTime = 1;
+    event.e2Info.instanceID = 2;
+    event.e2Info.reqVLevel = 1; // Mark
+    QList<double> wtpXList;
+    QList<int> wtpProfitList;
+    QList<int> wtpActionNameList;
+    for (int i = 0; i <= 1.5 * xSize; i++)
+    {
+        double k = (double) i / xSize;
+        event.e2Info.extraWTP = k * unitRCancelCost; // Mark
+        allAction = alg.scheduleActionsWithIntMax(event);
+        action = alg.schedule(event, false);
+        wtpXList.append(k);
+        if (action.aType == BSAction::IGNORE)
+        {
+            wtpActionNameList.append(1);
+        }
+        else if (action.aType == BSAction::RESOURCE_ADD_PLAN)
+        {
+            wtpActionNameList.append(2);
+        }
+        else if (action.aType == BSAction::RESOURCE_TRANS_PLAN)
+        {
+            wtpActionNameList.append(3);
+        }
+        else if (action.aType == BSAction::FORK_NEXT_PERIOD)
+        {
+            wtpActionNameList.append(4);
+        }
+        wtpProfitList.append(action.profit);
+    }
+    QString _wtpX = "wtpX = [";
+    QString _wtpActions = "wtpActions = [";
+    QString _wtpProfit = "wtpProfit = [";
+    assert(wtpXList.size() == wtpActionNameList.size() && wtpXList.size() == wtpProfitList.size());
+    for (int i = 0; i < wtpXList.size(); i++)
+    {
+        _wtpX += QString("%1 ").arg(wtpXList[i]);
+        _wtpActions += QString("%1 ").arg(wtpActionNameList[i]);
+        _wtpProfit += QString("%1 ").arg(wtpProfitList[i]);
+    }
+    _wtpX = _wtpX.trimmed().append("];");
+    _wtpActions = _wtpActions.trimmed().append("];");
+    _wtpProfit = _wtpProfit.trimmed().append("];");
+//    qDebug() << "wtpActionNameList=" << wtpActionNameList;
+
+    //subplot 3
+    event.eventType = BSEvent::SERVICE_EXEC_DELAY_E5;
+    event.eventTime = 10;
+    event.e5Info.instanceID = 1;
+    event.e5Info.sNodeID = 1;
+    event.e5Info.timeDelay = 10; //Mark
+    QList<double> delayXList;
+    QList<int> delayProfitList;
+    QList<int> delayActionNameList;
+    const int unitDelayCost = BSConfig::Instance()->getUnitDelayCost();
+    for (int i = 0; i <= xSize; i++)
+    {
+        double k = (double) i / xSize;
+        int unitTimeDelayCost = unitDelayCost * k;
+        BSConfig::Instance()->setUnitTimeDelayCost(unitTimeDelayCost);
+        action = alg.schedule(event, false);
+        delayXList.append(k);
+        if (action.aType == BSAction::IGNORE)
+        {
+            delayActionNameList.append(1);
+        }
+        else if (action.aType == BSAction::CANCEL_INSTANCE)
+        {
+            delayActionNameList.append(2);
+        }
+        else if (action.aType == BSAction::DELAY_TO_NEXT_PEROID)
+        {
+            delayActionNameList.append(3);
+        }
+        delayProfitList.append(action.profit);
+    }
+    qDebug() << "delayActionNameList =" << delayActionNameList;
+    QString _delayX = "delayX = [";
+    QString _delayActions = "delayActions = [";
+    QString _delayProfit = "delayProfit = [";
+    assert(delayXList.size() == delayActionNameList.size() && delayXList.size() == delayProfitList.size());
+    for (int i = 0; i < delayXList.size(); i++)
+    {
+        _delayX += QString("%1 ").arg(delayXList[i]);
+        _delayActions += QString("%1 ").arg(delayActionNameList[i]);
+        _delayProfit += QString("%1 ").arg(delayProfitList[i]);
+    }
+    _delayX = _delayX.trimmed().append("];");
+    _delayActions = _delayActions.trimmed().append("];");
+    _delayProfit = _delayProfit.trimmed().append("];");
+
     QString matlabCmd("clear all; cd E:\\Dev\\MATLAB7\\work\\business_uc;");
-    matlabCmd += QString("%1 %2 %3 %4 %5 %6 %7 ").arg(_x).arg(_actions)
-            .arg(_profit).arg(_ignore).arg(_resAdd).arg(_resTrans).arg(_forkNext);
+    matlabCmd += QString("%1 %2 %3 %4 %5 %6 %7  %8 %9 %10  %11 %12 %13").arg(_x).arg(_actions)
+            .arg(_profit).arg(_ignore).arg(_resAdd).arg(_resTrans).arg(_forkNext) // Test1
+            .arg(_wtpX).arg(_wtpActions).arg(_wtpProfit)
+            .arg(_delayX).arg(_delayActions).arg(_delayProfit);
 //    matlabCmd.append(" test3_1(x, actions, profit, ignore, resAdd, resTrans, forkNext);");
-    matlabCmd.append(" test3(x, actions, profit);");
+    matlabCmd.append(" test3(x, actions, profit, wtpX, wtpActions, wtpProfit, delayX, delayActions, delayProfit);");
 
     engEvalString(ep, matlabCmd.toStdString().c_str());
     qDebug() << "Matlab CMD:" << matlabCmd;
