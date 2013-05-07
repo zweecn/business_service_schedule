@@ -8,6 +8,7 @@
 #include "bsevent.h"
 #include "bsaction.h"
 #include "bsalgorithm.h"
+#include "bsconfig.h"
 
 BSTest::BSTest()
 {
@@ -626,4 +627,120 @@ void BSTest::runTest2()
 
     qDebug() << "BSTest::runTest2() Finished." << __FILE__ << __LINE__;
     qDebug() << "====================================================================";
+}
+
+void BSTest::runTest3()
+{
+    qDebug() << "BSTest::runTest3() ..." << __FILE__ << __LINE__;
+
+    BSAlgorithm alg;
+    BSEvent event;
+    BSAction action;
+    QList<BSAction> allAction;
+
+    event.eventType = BSEvent::REQUIREMENT_ADD_E2;
+    event.eventTime = 1;
+    event.e2Info.instanceID = 2;
+    event.e2Info.reqVLevel = 1; // Mark
+    event.e2Info.extraWTP = 2000; // Mark
+
+    int xSize = 10;
+    double x = 1;
+    BSConfig::Instance()->setUnitRPrice(1000);
+    int unitRPrice = BSConfig::Instance()->getUnitRPrice();
+    QList<double> unitRCancelCost_unitRPrice;
+    QList<int> actionNameList;
+    QList<int> actionProfitList;
+    QList<int> ignoreProfitList;
+    QList<int> resourceAddProfitList;
+    QList<int> resourceTransProfitList;
+    QList<int> forkNextProfitList;
+
+//    qDebug() << "k =unitRCancelCost / unitRPrice Action IgnoreProfit ResourceAddProfit ResourceTransProfit ForkNextProfit";
+    for (int i = 0; i <= 1.5 * xSize; i++)
+    {
+        double k = x * i / xSize;
+        int unitRCancelCost = unitRPrice * k;
+        unitRCancelCost_unitRPrice.append(k);
+
+        BSConfig::Instance()->setUnitRCancelCost(unitRCancelCost);
+        allAction = alg.scheduleActionsWithIntMax(event);
+        action = alg.schedule(event, false);
+
+        if (action.aType == BSAction::IGNORE)
+        {
+            actionNameList.append(1);
+        }
+        else if (action.aType == BSAction::RESOURCE_ADD_PLAN)
+        {
+            actionNameList.append(2);
+        }
+        else if (action.aType == BSAction::RESOURCE_TRANS_PLAN)
+        {
+            actionNameList.append(3);
+        }
+        else if (action.aType == BSAction::FORK_NEXT_PERIOD)
+        {
+            actionNameList.append(4);
+        }
+        actionProfitList.append(action.profit);
+
+        if (allAction.size() == 4)
+        {
+            for (int i = 0; i < allAction.size(); i++)
+            {
+                if (allAction[i].aType == BSAction::IGNORE)
+                {
+                    ignoreProfitList.append(allAction[i].profit);
+                }
+                else if (allAction[i].aType == BSAction::RESOURCE_ADD_PLAN)
+                {
+                    resourceAddProfitList.append(allAction[i].profit);
+                }
+                else if (allAction[i].aType == BSAction::RESOURCE_TRANS_PLAN)
+                {
+                    resourceTransProfitList.append(allAction[i].profit);
+                }
+                else if (allAction[i].aType == BSAction::FORK_NEXT_PERIOD)
+                {
+                    forkNextProfitList.append(allAction[i].profit);
+                }
+            }
+        }
+    }
+    QString _x = "x = [";
+    QString _actions = "actions = [";
+    QString _profit = "profit = [";
+    QString _ignore = "ignore = [";
+    QString _resAdd = "resAdd = [";
+    QString _resTrans = "resTrans = [";
+    QString _forkNext = "forkNext = [";
+    for (int i = 0; i < unitRCancelCost_unitRPrice.size(); i++)
+    {
+        _x += QString("%1 ").arg(unitRCancelCost_unitRPrice[i]);
+        _actions += QString("%1 ").arg(actionNameList[i]);
+        _profit += QString("%1 ").arg(actionProfitList[i]);
+        _ignore += QString("%1 ").arg(ignoreProfitList[i]);
+        _resAdd += QString("%1 ").arg(resourceAddProfitList[i]);
+        _resTrans += QString("%1 ").arg(resourceTransProfitList[i]);
+        _forkNext += QString("%1 ").arg(forkNextProfitList[i]);
+    }
+    _x = _x.trimmed().append("];");
+    _actions = _actions.trimmed().append("];");
+    _profit = _profit.trimmed().append("];");
+    _ignore = _ignore.trimmed().append("];");
+    _resAdd = _resAdd.trimmed().append("];");
+    _resTrans = _resTrans.trimmed().append("];");
+    _forkNext = _forkNext.trimmed().append("];");
+
+    QString matlabCmd("clear all; cd E:\\Dev\\MATLAB7\\work\\business_uc;");
+    matlabCmd += QString("%1 %2 %3 %4 %5 %6 %7 ").arg(_x).arg(_actions)
+            .arg(_profit).arg(_ignore).arg(_resAdd).arg(_resTrans).arg(_forkNext);
+//    matlabCmd.append(" test3_1(x, actions, profit, ignore, resAdd, resTrans, forkNext);");
+    matlabCmd.append(" test3(x, actions, profit);");
+
+    engEvalString(ep, matlabCmd.toStdString().c_str());
+    qDebug() << "Matlab CMD:" << matlabCmd;
+
+    qDebug() << "BSTest::runTest3() finished." << __FILE__ << __LINE__;
 }

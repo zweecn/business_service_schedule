@@ -11,6 +11,7 @@ public:
 
     void runTest1();
     void runTest2();
+    void runTest3();
 private:
     Engine *ep;
 };

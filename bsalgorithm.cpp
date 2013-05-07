@@ -112,6 +112,37 @@ QList<BSAction> BSAlgorithm::scheduleActions(const BSEvent &event)
     return actions;
 }
 
+QList<BSAction> BSAlgorithm::scheduleActionsWithIntMax(const BSEvent &event)
+{
+    QList<BSAction> actions;
+    if (event.eventType == BSEvent::REQUIREMENT_CANCEL_REDUCE_E1)
+    {
+        actions = subScheduleE1(event);
+    }
+    else if (event.eventType == BSEvent::REQUIREMENT_ADD_E2)
+    {
+        actions = subScheduleE2(event);
+    }
+    else if (event.eventType == BSEvent::REQUIREMENT_NEW_E3)
+    {
+        actions = subScheduleE3(event);
+    }
+    else if (event.eventType == BSEvent::RESOURCE_REDUCE_E4)
+    {
+        actions = subScheduleE4(event);
+    }
+    else if (event.eventType == BSEvent::SERVICE_EXEC_DELAY_E5)
+    {
+        actions = subScheduleE5(event);
+    }
+    else if (event.eventType == BSEvent::SERVICE_EXEC_FAILED_E6)
+    {
+        actions = subScheduleE6(event);
+    }
+
+    return actions;
+}
+
 BSAction BSAlgorithm::ignoreSchedule(const BSEvent & event)
 {
     QList<BSAction> actions = scheduleActions(event);

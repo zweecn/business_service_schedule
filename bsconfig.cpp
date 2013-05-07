@@ -21,6 +21,11 @@ BSConfig* BSConfig::Instance()
 
 BSConfig::BSConfig()
 {
+    unitRPrice = -1;
+    unitCompensatePrice = -1;
+    unitDelayCost = -1;
+    unitRCancelCost = -1;
+    unitTimeDelayCost = -1;
     init();
 }
 
@@ -53,25 +58,60 @@ bool BSConfig::init()
 
 int BSConfig::getUnitRPrice()
 {
-    return confMap["UnitRPrice"].toInt();
+    if (unitRPrice == -1)
+        unitRPrice = confMap["UnitRPrice"].toInt();
+    return unitRPrice;
 }
 
 int BSConfig::getUnitCompensatePrice()
 {
-    return confMap["UnitCompensatePrice"].toInt();
+    if (unitCompensatePrice == -1)
+        unitCompensatePrice = confMap["UnitCompensatePrice"].toInt();
+    return unitCompensatePrice;
 }
 
 int BSConfig::getUnitDelayCost()
 {
-    return confMap["UnitDelayCost"].toInt();
+    if (unitDelayCost == -1)
+        unitDelayCost = confMap["UnitDelayCost"].toInt();
+    return unitDelayCost;
 }
 
 int BSConfig::getUnitRCancelCost()
 {
-    return confMap["UnitRCancelCost"].toInt();
+    if (unitRCancelCost == -1)
+        unitRCancelCost = confMap["UnitRCancelCost"].toInt();
+    return unitRCancelCost;
 }
 
 int BSConfig::getUnitTimeDelayCost()
 {
-    return confMap["UnitTimeDelayCost"].toInt();
+    if (unitTimeDelayCost == -1)
+        unitTimeDelayCost = confMap["UnitTimeDelayCost"].toInt();
+    return unitTimeDelayCost;
+}
+
+void BSConfig::setUnitRPrice(int _unitRPrice)
+{
+    unitRPrice = _unitRPrice;
+}
+
+void BSConfig::setUnitCompensatePrice(int _unitCompensatePrice)
+{
+    unitCompensatePrice = _unitCompensatePrice;
+}
+
+void BSConfig::setUnitDelayCost(int _unitDelayCost)
+{
+    unitDelayCost = _unitDelayCost;
+}
+
+void BSConfig::setUnitRCancelCost(int _unitRCancelCost)
+{
+    unitRCancelCost = _unitRCancelCost;
+}
+
+void BSConfig::setUnitTimeDelayCost(int _unitTimeDelayCost)
+{
+    unitTimeDelayCost = _unitTimeDelayCost;
 }

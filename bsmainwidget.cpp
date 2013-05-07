@@ -21,6 +21,7 @@ BSMainWidget::BSMainWidget(QWidget *parent) :
     connect(this->saveWorkFlowInfoButton, SIGNAL(clicked()), this, SLOT(saveWorkFlow()));
     connect(this->test1Button, SIGNAL(clicked()), this, SLOT(matlabTest1()));
     connect(this->test2Button, SIGNAL(clicked()), this, SLOT(matlabTest2()));
+    connect(this->test3Button, SIGNAL(clicked()), this, SLOT(matlabTest3()));
 }
 
 void BSMainWidget::createButtons()
@@ -70,4 +71,16 @@ void BSMainWidget::matlabTest2()
     test.runTest2();
     test2Button->setEnabled(true);
     qDebug() << "BSMainWidget::matlabTest2() finished." << __FILE__ << __LINE__;
+}
+
+void BSMainWidget::matlabTest3()
+{
+    test2Button->setEnabled(false);
+    QString dateTime = QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss");
+    qDebug() << "BSMainWidget::matlabTest3()..." << __FILE__ << __LINE__;
+    qDebug() << "DateTime:" << dateTime;
+    logLabel->setText(QString("<p>DateTime: %1</p> <p>LogFile: ./bs.log</p>").arg(dateTime));
+    test.runTest3();
+    test2Button->setEnabled(true);
+    qDebug() << "BSMainWidget::matlabTest3() finished." << __FILE__ << __LINE__;
 }

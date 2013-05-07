@@ -21,6 +21,7 @@ public slots:
     void saveWorkFlow();
     void matlabTest1();
     void matlabTest2();
+    void matlabTest3();
 
 private:
     void createButtons();
