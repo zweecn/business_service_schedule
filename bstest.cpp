@@ -389,14 +389,6 @@ void BSTest::runTest2()
     }
     qDebug() << "-------------------------------------------------------------------------------";
     qDebug() << "Use random action...";
-//    qDebug() << "Time" << "EventType" << "EventDetail" << "ActionType" << "ActionDetail"
-//             << "Revenue" << "Cost" << "Profit";
-//    for (int i = 0; i < randomProfitList.size(); i++)
-//    {
-//        qDebug() << eventList[i].eventTime << eventList[i].name() << eventList[i].toString()
-//                 << randomActionList[i].name() << randomActionList[i].toString()
-//                 << randomRevenueList[i] << randomCostList[i] << randomProfitList[i];
-//    }
     QString randomStrategyLog = QString("随机策略(Random Strategy):\n");
     randomStrategyLog += QString("%1\n").arg(header);
     for (int i = 0; i < eventList.size(); i++)
@@ -439,14 +431,6 @@ void BSTest::runTest2()
 
     qDebug() << "-------------------------------------------------------------------------------";
     qDebug() << "Use minCcost action...";
-//    qDebug() << "Time" << "EventType" << "EventDetail" << "ActionType" << "ActionDetail"
-//             << "Revenue" << "Cost" << "Profit";
-//    for (int i = 0; i < minCostProfitList.size(); i++)
-//    {
-//        qDebug() << eventList[i].eventTime << eventList[i].name() << eventList[i].toString()
-//                 << minCostActionList[i].name() << minCostActionList[i].toString()
-//                 << minCostRevenueList[i] << minCostCostList[i] << minCostProfitList[i];
-//    }
 
     QString minCostStrategyLog = QString("最小成本策略(MinCost Strategy):\n");
     minCostStrategyLog += QString("%1\n").arg(header);
@@ -491,14 +475,6 @@ void BSTest::runTest2()
 
     qDebug() << "-------------------------------------------------------------------------------";
     qDebug() << "Use maxProfit action...";
-//    qDebug() << "Time" << "EventType" << "EventDetail" << "ActionType" << "ActionDetail"
-//             << "Revenue" << "Cost" << "Profit";
-//    for (int i = 0; i < maxProfitProfitList.size(); i++)
-//    {
-//        qDebug() << eventList[i].eventTime << eventList[i].name() << eventList[i].toString()
-//                 << maxProfitActionList[i].name() << maxProfitActionList[i].toString()
-//                 << maxProfitRevenueList[i] << maxProfitCostList[i] << maxProfitProfitList[i];
-//    }
     QString maxProfitStrategyLog = QString("最大利润策略(MaxProfit Strategy):\n");
     maxProfitStrategyLog += QString("%1\n").arg(header);
     for (int i = 0; i < eventList.size(); i++)
@@ -600,6 +576,7 @@ void BSTest::runTest3()
     BSEvent event;
     BSAction action;
     QList<BSAction> allAction;
+    currLog = QString("Test3:\n");
 
     // Figure 1 - subplot 1
     event.eventType = BSEvent::REQUIREMENT_ADD_E2;
@@ -843,12 +820,6 @@ void BSTest::runTest3()
     matlabCmd += QString("%1 %2 %3 ").arg(_delayX).arg(_delayActions).arg(_delayProfit);
     matlabCmd += QString("%1 %2 %3 ").arg(_kX).arg(_kActions).arg(_kProfits);
 
-//    matlabCmd += QString("%1 %2 %3 %4 %5 %6 %7  %8 %9 %10  %11 %12 %13").arg(_x).arg(_actions)
-//            .arg(_profit).arg(_ignore).arg(_resAdd).arg(_resTrans).arg(_forkNext) // Test1
-//            .arg(_wtpX).arg(_wtpActions).arg(_wtpProfit)
-//            .arg(_delayX).arg(_delayActions).arg(_delayProfit);
-//    matlabCmd.append(" test3_1(x, actions, profit, ignore, resAdd, resTrans, forkNext);");
-
     matlabCmd.append(" test3(x, actions, profit, wtpX, wtpActions, wtpProfit, delayX, delayActions, delayProfit, kX, kActions, kProfits);");
 
     engEvalString(ep, matlabCmd.toStdString().c_str());
@@ -864,7 +835,7 @@ void BSTest::saveMatlabCmd()
     outFile.open(QIODevice::WriteOnly | QIODevice::Append);
     QTextStream ts(&outFile);
     QString str("======================================================================\n");
-    str += QString("DateTime: %1\nMatlabCmd:\n%2\nLog:\n%3\n")
+    str += QString("DateTime: %1\nMatlabCmd:\n%2\nLog:\n%3")
             .arg(dateTime).arg(cmd).arg(currLog);
     str += QString("======================================================================");
     ts << str << endl;

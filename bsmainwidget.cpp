@@ -90,7 +90,9 @@ void BSMainWidget::matlabTest3()
 
 void BSMainWidget::saveMatlabCmd()
 {
+    saveMatlabCmdButton->setEnabled(false);
     qDebug() << "BSMainWidget::saveMatlabCmd()..." << __FILE__ << __LINE__;
     test.saveMatlabCmd();
     qDebug() << "BSMainWidget::saveMatlabCmd() finished." << __FILE__ << __LINE__;
+    saveMatlabCmdButton->setEnabled(true);
 }
