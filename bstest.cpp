@@ -2,6 +2,8 @@
 #include <QString>
 #include <QDebug>
 #include <engine.h>
+#include <QFile>
+#include <QDateTime>
 
 #include "bstest.h"
 #include "bsworkflow.h"
@@ -33,12 +35,13 @@ void BSTest::runTest1()
     BSAlgorithm alg;
     BSEvent event;
     BSAction action;
-    BSWorkFlow::Instance()->reset();
 
     /* Test E1 顾客需求取消/降低
      * 1. 取消的需求所腾出来的资源不够fork另一个实例
      *    或发生事件的时间在同步时间之后，只能不作为
      */
+    BSConfig::Instance()->reset();
+    BSWorkFlow::Instance()->reset();
     qDebug() << "====================================================================";
     qDebug() << "Test E1.1: 取消的需求所腾出来的资源不够fork另一个实例,或发生事件的时间在同步时间之后，只能不作为...";
     event.eventType = BSEvent::REQUIREMENT_CANCEL_REDUCE_E1;
@@ -54,6 +57,8 @@ void BSTest::runTest1()
     /* Test E1 顾客需求取消/降低
      * 2. 取消的需求所腾出来的资源够fork另一个实例,并且取消的时间在同步时间之前
      */
+    BSConfig::Instance()->reset();
+    BSWorkFlow::Instance()->reset();
     qDebug() << "Test E1.2: 取消的需求所腾出来的资源够fork另一个实例,并且取消的时间在同步时间之前...";
     event.eventType = BSEvent::REQUIREMENT_CANCEL_REDUCE_E1;
     event.eventTime = 1; //Mark
@@ -69,6 +74,8 @@ void BSTest::runTest1()
     /* Test E2 顾客需求增加
      * 1. 不需要从其他资源迁移过来，候选资源就已经足够执行增加资源分配了
      */
+    BSConfig::Instance()->reset();
+    BSWorkFlow::Instance()->reset();
     qDebug() << "Test E2.1: 不需要从其他资源迁移过来，候选资源就已经足够执行增加资源分配了...";
     event.eventType = BSEvent::REQUIREMENT_ADD_E2;
     event.eventTime = 1;
@@ -84,6 +91,8 @@ void BSTest::runTest1()
     /* Test E2 顾客需求增加
      * 2. 当前周期资源不够，但是下一周期候选资源足够，可以fork新实例到下一周期
      */
+    BSConfig::Instance()->reset();
+    BSWorkFlow::Instance()->reset();
     qDebug() << "Test E2.2: 当前周期资源不够，但是下一周期候选资源足够，可以fork新实例到下一周期...";
     event.eventType = BSEvent::REQUIREMENT_ADD_E2;
     event.eventTime = 1;
@@ -99,6 +108,8 @@ void BSTest::runTest1()
     /* Test E2 顾客需求增加
      * 3. 当前周期资源不够，下一周期资源也不够，只能进行资源转移
      */
+    BSConfig::Instance()->reset();
+    BSWorkFlow::Instance()->reset();
     qDebug() << "Test E2.3: 当前周期资源不够，下一周期资源也不够，只能进行资源转移...";
     event.eventType = BSEvent::REQUIREMENT_ADD_E2;
     event.eventTime = 1;
@@ -116,6 +127,8 @@ void BSTest::runTest1()
     /* Test E3 新增顾客需求
      * 1. 本周期资源足够在当前周期fork新实例来满足，最好是在当前周期
      */
+    BSConfig::Instance()->reset();
+    BSWorkFlow::Instance()->reset();
     qDebug() << "Test E3.1: 本周期资源足够在当前周期fork新实例来满足，最好是在当前周期...";
     event.eventType = BSEvent::REQUIREMENT_NEW_E3;
     event.eventTime = 1;
@@ -134,6 +147,8 @@ void BSTest::runTest1()
      * 2. 本周期资源不够，不能在当前周期满足，那么就推迟到下一周期fork
      *   并且extraWTP要足够，否则不够延迟赔偿
      */
+    BSConfig::Instance()->reset();
+    BSWorkFlow::Instance()->reset();
     qDebug() << "Test E3.2: 本周期资源不够，不能在当前周期满足，那么就推迟到下一周期fork.并且extraWTP要足够，否则不够延迟赔偿...";
     event.eventType = BSEvent::REQUIREMENT_NEW_E3;
     event.eventTime = 1;
@@ -152,6 +167,8 @@ void BSTest::runTest1()
      * 3. 本周期和下一周期的资源都不够，只能不作为
      *   或者给的extraWTP不够，只能在不作为
      */
+    BSConfig::Instance()->reset();
+    BSWorkFlow::Instance()->reset();
     qDebug() << "Test E3.3: 本周期和下一周期的资源都不够，只能不作为.或者给的extraWTP不够，只能在不作为...";
     event.eventType = BSEvent::REQUIREMENT_NEW_E3;
     event.eventTime = 1;
@@ -170,6 +187,8 @@ void BSTest::runTest1()
     /* Test E4 资源减少
      * 1. 下一周期的资源够迁移到下一周期的，可以取消部分当前的，迁移到下一周期
      */
+    BSConfig::Instance()->reset();
+    BSWorkFlow::Instance()->reset();
     qDebug() << "Test E4.1: 下一周期的资源够迁移到下一周期的，可以取消部分当前的，迁移到下一周期...";
     event.eventType = BSEvent::RESOURCE_REDUCE_E4;
     event.eventTime = 10;
@@ -184,6 +203,8 @@ void BSTest::runTest1()
     /* Test E4 资源减少
      * 1. 下一周期的资源不够迁移到下一周期的，只能取消当前的
      */
+    BSConfig::Instance()->reset();
+    BSWorkFlow::Instance()->reset();
     qDebug() << "Test E4.2: 下一周期的资源不够迁移到下一周期的，只能取消当前的...";
     event.eventType = BSEvent::RESOURCE_REDUCE_E4;
     event.eventTime = 10;
@@ -200,6 +221,8 @@ void BSTest::runTest1()
     /* Test E5 执行延时
      * 1. 延时不影响同步结点，可以执行不作为
      */
+    BSConfig::Instance()->reset();
+    BSWorkFlow::Instance()->reset();
     qDebug() << "Test E5.1: 延时不影响同步结点，可以执行不作为...";
     event.eventType = BSEvent::SERVICE_EXEC_DELAY_E5;
     event.eventTime = 10;
@@ -215,6 +238,8 @@ void BSTest::runTest1()
     /* Test E5 执行延时
      * 2. 延时影响了同步结点，不能不作为，需要推迟当前实例
      */
+    BSConfig::Instance()->reset();
+    BSWorkFlow::Instance()->reset();
     qDebug() << "Test E5.2: 延时影响了同步结点，不能不作为，需要推迟当前实例...";
     event.eventType = BSEvent::SERVICE_EXEC_DELAY_E5;
     event.eventTime = 10;
@@ -230,6 +255,8 @@ void BSTest::runTest1()
     /* Test E5 执行延时
      * 3. 后一个周期的资源不够，不能延迟，只能取消/或者忽略，忽略的前提是取消带来的代价更大
      */
+    BSConfig::Instance()->reset();
+    BSWorkFlow::Instance()->reset();
     qDebug() << "Test E5.3: 后一个周期的资源不够，不能延迟，只能取消/或者忽略，忽略的前提是取消带来的代价更大...";
     event.eventType = BSEvent::SERVICE_EXEC_DELAY_E5;
     event.eventTime = 10;
@@ -247,6 +274,8 @@ void BSTest::runTest1()
     /* Test E6 执行失败
      * 1. 已经执行到同步结点，不能重试
      */
+    BSConfig::Instance()->reset();
+    BSWorkFlow::Instance()->reset();
     qDebug() << "Test E6.1: 已经执行到同步结点，不能重试...";
     event.eventType = BSEvent::SERVICE_EXEC_FAILED_E6;
     event.eventTime = 10;
@@ -261,6 +290,8 @@ void BSTest::runTest1()
     /* Test E6 执行失败
      * 2. 还没有执行到同步结点，或者故障结点还不是同步结点，可以重试
      */
+    BSConfig::Instance()->reset();
+    BSWorkFlow::Instance()->reset();
     qDebug() << "Test E6.2: 还没有执行到同步结点，或者故障结点还不是同步结点，可以重试...";
     event.eventType = BSEvent::SERVICE_EXEC_FAILED_E6;
     event.eventTime = 1;
@@ -592,6 +623,7 @@ void BSTest::runTest2()
                  + profitMaxProfitString
                  + matlabCmd;
     qDebug() << "Matlab code: " << matlabCode;
+    this->cmd = matlabCode;
 
     // Destory val
     mxDestroyArray(_t);
@@ -638,7 +670,7 @@ void BSTest::runTest3()
     BSAction action;
     QList<BSAction> allAction;
 
-    // subplot 1
+    // Figure 1 - subplot 1
     event.eventType = BSEvent::REQUIREMENT_ADD_E2;
     event.eventTime = 1;
     event.e2Info.instanceID = 2;
@@ -646,6 +678,7 @@ void BSTest::runTest3()
     event.e2Info.extraWTP = 2000; // Mark
 
     int xSize = 10;
+    BSConfig::Instance()->reset();
     const int unitRPrice = BSConfig::Instance()->getUnitRPrice();
     const int unitRCancelCost = BSConfig::Instance()->getUnitRCancelCost();
     QList<double> unitRCancelCost_unitRPrice;
@@ -731,7 +764,7 @@ void BSTest::runTest3()
     _resTrans = _resTrans.trimmed().append("];");
     _forkNext = _forkNext.trimmed().append("];");
 
-    // subplot 2
+    // Figure 1 - subplot 2
     event.eventType = BSEvent::REQUIREMENT_ADD_E2;
     event.eventTime = 1;
     event.e2Info.instanceID = 2;
@@ -739,6 +772,7 @@ void BSTest::runTest3()
     QList<double> wtpXList;
     QList<int> wtpProfitList;
     QList<int> wtpActionNameList;
+    BSConfig::Instance()->reset();
     for (int i = 0; i <= 1.5 * xSize; i++)
     {
         double k = (double) i / xSize;
@@ -779,7 +813,7 @@ void BSTest::runTest3()
     _wtpProfit = _wtpProfit.trimmed().append("];");
 //    qDebug() << "wtpActionNameList=" << wtpActionNameList;
 
-    //subplot 3
+    // Figure 2 - subplot 1
     event.eventType = BSEvent::SERVICE_EXEC_DELAY_E5;
     event.eventTime = 10;
     event.e5Info.instanceID = 1;
@@ -788,6 +822,7 @@ void BSTest::runTest3()
     QList<double> delayXList;
     QList<int> delayProfitList;
     QList<int> delayActionNameList;
+    BSConfig::Instance()->reset();
     const int unitDelayCost = BSConfig::Instance()->getUnitDelayCost();
     for (int i = 0; i <= xSize; i++)
     {
@@ -825,16 +860,79 @@ void BSTest::runTest3()
     _delayActions = _delayActions.trimmed().append("];");
     _delayProfit = _delayProfit.trimmed().append("];");
 
+    // Figure 2 - subplot 2
+    event.eventType = BSEvent::SERVICE_EXEC_DELAY_E5;
+    event.eventTime = 10;
+    event.e5Info.instanceID = 1;
+    event.e5Info.sNodeID = 1;
+    event.e5Info.timeDelay = 10; //Mark
+    BSConfig::Instance()->reset();
+    const int unitTimeDelayCost = unitDelayCost * 0.3;
+    QList<double> kList;
+    QList<int> kActionList;
+    QList<int> kProfitList;
+    for (int i = 0; i <= 3 * xSize; i++)
+    {
+        double k = (double) i / xSize;
+        BSConfig::Instance()->setUnitDelayCost((double) unitDelayCost * k);
+        BSConfig::Instance()->setUnitTimeDelayCost((double) unitTimeDelayCost * k);
+        action = alg.schedule(event, false);
+        kList.append(k);
+        if (action.aType == BSAction::IGNORE)
+        {
+            kActionList.append(1);
+        }
+        else if (action.aType == BSAction::CANCEL_INSTANCE)
+        {
+            kActionList.append(2);
+        }
+        else if (action.aType == BSAction::DELAY_TO_NEXT_PEROID)
+        {
+            kActionList.append(3);
+        }
+        kProfitList.append(action.profit);
+    }
+    QString _kX = "kX = [";
+    QString _kActions = "kActions = [";
+    QString _kProfits = "kProfits = [";
+    assert(kList.size() == kActionList.size());
+    for (int i = 0; i < kList.size(); i++)
+    {
+        _kX += QString("%1 ").arg(kList[i]);
+        _kActions += QString("%1 ").arg(kActionList[i]);
+        _kProfits += QString("%1 ").arg(kProfitList[i]);
+    }
+    _kX = _kX.trimmed().append("];");
+    _kActions = _kActions.trimmed().append("];");
+    _kProfits = _kProfits.trimmed().append("];");
+
     QString matlabCmd("clear all; cd E:\\Dev\\MATLAB7\\work\\business_uc;");
-    matlabCmd += QString("%1 %2 %3 %4 %5 %6 %7  %8 %9 %10  %11 %12 %13").arg(_x).arg(_actions)
-            .arg(_profit).arg(_ignore).arg(_resAdd).arg(_resTrans).arg(_forkNext) // Test1
-            .arg(_wtpX).arg(_wtpActions).arg(_wtpProfit)
-            .arg(_delayX).arg(_delayActions).arg(_delayProfit);
+    matlabCmd += QString("%1 %2 %3 ").arg(_x).arg(_actions).arg(_profit);
+    matlabCmd += QString("%1 %2 %3 ").arg(_wtpX).arg(_wtpActions).arg(_wtpProfit);
+    matlabCmd += QString("%1 %2 %3 ").arg(_delayX).arg(_delayActions).arg(_delayProfit);
+    matlabCmd += QString("%1 %2 %3 ").arg(_kX).arg(_kActions).arg(_kProfits);
+
+//    matlabCmd += QString("%1 %2 %3 %4 %5 %6 %7  %8 %9 %10  %11 %12 %13").arg(_x).arg(_actions)
+//            .arg(_profit).arg(_ignore).arg(_resAdd).arg(_resTrans).arg(_forkNext) // Test1
+//            .arg(_wtpX).arg(_wtpActions).arg(_wtpProfit)
+//            .arg(_delayX).arg(_delayActions).arg(_delayProfit);
 //    matlabCmd.append(" test3_1(x, actions, profit, ignore, resAdd, resTrans, forkNext);");
-    matlabCmd.append(" test3(x, actions, profit, wtpX, wtpActions, wtpProfit, delayX, delayActions, delayProfit);");
+
+    matlabCmd.append(" test3(x, actions, profit, wtpX, wtpActions, wtpProfit, delayX, delayActions, delayProfit, kX, kActions, kProfits);");
 
     engEvalString(ep, matlabCmd.toStdString().c_str());
     qDebug() << "Matlab CMD:" << matlabCmd;
-
+    this->cmd = matlabCmd;
     qDebug() << "BSTest::runTest3() finished." << __FILE__ << __LINE__;
+}
+
+void BSTest::saveMatlabCmd()
+{
+    QString dateTime = QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss");
+    QFile outFile("matlab.log");
+    outFile.open(QIODevice::WriteOnly | QIODevice::Append);
+    QTextStream ts(&outFile);
+    QString str = QString("%1 %2").arg(dateTime).arg(cmd);
+    ts << str << endl;
+    outFile.close();
 }

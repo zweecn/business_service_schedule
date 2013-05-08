@@ -22,6 +22,7 @@ public slots:
     void matlabTest1();
     void matlabTest2();
     void matlabTest3();
+    void saveMatlabCmd();
 
 private:
     void createButtons();
@@ -31,6 +32,7 @@ private:
     QPushButton *test1Button;
     QPushButton *test2Button;
     QPushButton *test3Button;
+    QPushButton *saveMatlabCmdButton;
     QLabel* logLabel;
 
     BSTest test;

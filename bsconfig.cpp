@@ -21,6 +21,11 @@ BSConfig* BSConfig::Instance()
 
 BSConfig::BSConfig()
 {
+    reset();
+}
+
+void BSConfig::reset()
+{
     unitRPrice = -1;
     unitCompensatePrice = -1;
     unitDelayCost = -1;

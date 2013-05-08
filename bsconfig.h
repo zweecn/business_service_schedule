@@ -8,6 +8,8 @@ class BSConfig
 public:
     static BSConfig * Instance();
 
+    void reset();
+
     int getUnitRPrice();
     int getUnitCompensatePrice();
     int getUnitDelayCost();

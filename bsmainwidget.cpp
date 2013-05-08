@@ -16,12 +16,13 @@ BSMainWidget::BSMainWidget(QWidget *parent) :
     setLayout(mainLayout);
 
     setWindowTitle(tr("测试窗口"));
-    resize(400, 150);
+    resize(500, 150);
 
     connect(this->saveWorkFlowInfoButton, SIGNAL(clicked()), this, SLOT(saveWorkFlow()));
     connect(this->test1Button, SIGNAL(clicked()), this, SLOT(matlabTest1()));
     connect(this->test2Button, SIGNAL(clicked()), this, SLOT(matlabTest2()));
     connect(this->test3Button, SIGNAL(clicked()), this, SLOT(matlabTest3()));
+    connect(this->saveMatlabCmdButton, SIGNAL(clicked()), this, SLOT(saveMatlabCmd()));
 }
 
 void BSMainWidget::createButtons()
@@ -31,15 +32,17 @@ void BSMainWidget::createButtons()
     test1Button = new QPushButton(tr("实验1"));
     test2Button = new QPushButton(tr("实验2"));
     test3Button = new QPushButton(tr("实验3"));
+    saveMatlabCmdButton = new QPushButton(tr("保存Matlab语句"));
     buttonGroup = new QGroupBox();
     QGridLayout *layout = new QGridLayout;
-    layout->addWidget(logLabel, 0, 0, 1, 5);
+    layout->addWidget(logLabel, 0, 0, 1, 6);
     layout->addWidget(saveWorkFlowInfoButton, 1, 0);
+    layout->addWidget(saveMatlabCmdButton, 1, 1);
     layout->setRowStretch(0, 1);
-    layout->setColumnStretch(1, 1);
-    layout->addWidget(test1Button, 1, 2);
-    layout->addWidget(test2Button, 1, 3);
-    layout->addWidget(test3Button, 1, 4);
+    layout->setColumnStretch(2, 1);
+    layout->addWidget(test1Button, 1, 3);
+    layout->addWidget(test2Button, 1, 4);
+    layout->addWidget(test3Button, 1, 5);
     buttonGroup->setLayout(layout);
 }
 
@@ -83,4 +86,11 @@ void BSMainWidget::matlabTest3()
     test.runTest3();
     test2Button->setEnabled(true);
     qDebug() << "BSMainWidget::matlabTest3() finished." << __FILE__ << __LINE__;
+}
+
+void BSMainWidget::saveMatlabCmd()
+{
+    qDebug() << "BSMainWidget::saveMatlabCmd()..." << __FILE__ << __LINE__;
+    test.saveMatlabCmd();
+    qDebug() << "BSMainWidget::saveMatlabCmd() finished." << __FILE__ << __LINE__;
 }
