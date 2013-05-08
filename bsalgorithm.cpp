@@ -184,7 +184,7 @@ BSAction BSAlgorithm::randomSchedule(const BSEvent & event)
         qWarning() << __FILE__ << __LINE__ << "Random schedule can not get actions.";
         exit(-1);
     }
-    srand(time(NULL));
+    srand(time(NULL) + event.eventTime);
     int chouse = rand() % actions.size();
     return actions[chouse];
 }

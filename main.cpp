@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
     QTextCodec::setCodecForLocale(gbk);
     QTextCodec::setCodecForCStrings(gbk);
 
-//    qInstallMsgHandler(customMessageHandler);
+    qInstallMsgHandler(customMessageHandler);
 
     qDebug() << "##########################################################################";
     qDebug() << "main()..." << __FILE__ << __LINE__;

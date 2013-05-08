@@ -316,7 +316,10 @@ void BSTest::runTest2()
     **/
     BSAlgorithm alg;
     BSAction action;
+    currLog = QString("Test2:\n");
+    QString header("Time\tEventType\tEventDetail\tActionType\tActionDetail\tRevenue\tCost\tProfit");
 
+    // [1] 不作为策略
     BSWorkFlow::Instance()->reset();
     QList<int> ignoreRevenueList;
     QList<int> ignoreCostList;
@@ -344,16 +347,23 @@ void BSTest::runTest2()
 
     qDebug() << "-------------------------------------------------------------------------------";
     qDebug() << "Use ignore action...";
-    qDebug() << "Time" << "EventType" << "EventDetail" << "ActionType" << "ActionDetail"
-             << "Revenue" << "Cost" << "Profit";
+    QString ignoreStrategyLog = QString("不作为策略(Ignore Strategy):\n");
+    ignoreStrategyLog += QString("%1\n").arg(header);
     for (int i = 0; i < eventList.size(); i++)
     {
-        qDebug() << eventList[i].eventTime << eventList[i].name() << eventList[i].toString()
-                 << ignoreActionList[i].name() << ignoreActionList[i].toString()
-                 << ignoreRevenueList[i] << ignoreCostList[i] << ignoreProfitList[i];
+        ignoreStrategyLog += QString("%1\t%2\t%3\t")
+                .arg(eventList[i].eventTime).arg(eventList[i].name()).arg(eventList[i].toString());
+        ignoreStrategyLog += QString("%1\t%2\t")
+                 .arg(ignoreActionList[i].name()).arg(ignoreActionList[i].toString());
+        ignoreStrategyLog += QString("%1\t%2\t%3\n")
+                 .arg(ignoreRevenueList[i]).arg(ignoreCostList[i]).arg(ignoreProfitList[i]);
     }
+    currLog.append(ignoreStrategyLog);
+    qDebug() << ignoreStrategyLog;
     qDebug() << "-------------------------------------------------------------------------------";
+    // [1] End
 
+    // [2] 随机策略
     BSWorkFlow::Instance()->reset();
     QList<int> randomRevenueList;
     QList<int> randomCostList;
@@ -379,16 +389,30 @@ void BSTest::runTest2()
     }
     qDebug() << "-------------------------------------------------------------------------------";
     qDebug() << "Use random action...";
-    qDebug() << "Time" << "EventType" << "EventDetail" << "ActionType" << "ActionDetail"
-             << "Revenue" << "Cost" << "Profit";
-    for (int i = 0; i < randomProfitList.size(); i++)
+//    qDebug() << "Time" << "EventType" << "EventDetail" << "ActionType" << "ActionDetail"
+//             << "Revenue" << "Cost" << "Profit";
+//    for (int i = 0; i < randomProfitList.size(); i++)
+//    {
+//        qDebug() << eventList[i].eventTime << eventList[i].name() << eventList[i].toString()
+//                 << randomActionList[i].name() << randomActionList[i].toString()
+//                 << randomRevenueList[i] << randomCostList[i] << randomProfitList[i];
+//    }
+    QString randomStrategyLog = QString("随机策略(Random Strategy):\n");
+    randomStrategyLog += QString("%1\n").arg(header);
+    for (int i = 0; i < eventList.size(); i++)
     {
-        qDebug() << eventList[i].eventTime << eventList[i].name() << eventList[i].toString()
-                 << randomActionList[i].name() << randomActionList[i].toString()
-                 << randomRevenueList[i] << randomCostList[i] << randomProfitList[i];
+        randomStrategyLog += QString("%1\t%2\t%3\t")
+                .arg(eventList[i].eventTime).arg(eventList[i].name()).arg(eventList[i].toString());
+        randomStrategyLog += QString("%1\t%2\t")
+                .arg(randomActionList[i].name()).arg(randomActionList[i].toString());
+        randomStrategyLog += QString("%1\t%2\t%3\n")
+                .arg(randomRevenueList[i]).arg(randomCostList[i]).arg(randomProfitList[i]);
     }
+    currLog.append(randomStrategyLog);
+    qDebug() << randomStrategyLog;
     qDebug() << "-------------------------------------------------------------------------------";
-
+    // [2] End
+    // [3] 最小成本策略
     BSWorkFlow::Instance()->reset();
     QList<int> minCostRevenueList;
     QList<int> minCostCostList;
@@ -415,17 +439,31 @@ void BSTest::runTest2()
 
     qDebug() << "-------------------------------------------------------------------------------";
     qDebug() << "Use minCcost action...";
-    qDebug() << "Time" << "EventType" << "EventDetail" << "ActionType" << "ActionDetail"
-             << "Revenue" << "Cost" << "Profit";
-    for (int i = 0; i < minCostProfitList.size(); i++)
+//    qDebug() << "Time" << "EventType" << "EventDetail" << "ActionType" << "ActionDetail"
+//             << "Revenue" << "Cost" << "Profit";
+//    for (int i = 0; i < minCostProfitList.size(); i++)
+//    {
+//        qDebug() << eventList[i].eventTime << eventList[i].name() << eventList[i].toString()
+//                 << minCostActionList[i].name() << minCostActionList[i].toString()
+//                 << minCostRevenueList[i] << minCostCostList[i] << minCostProfitList[i];
+//    }
+
+    QString minCostStrategyLog = QString("最小成本策略(MinCost Strategy):\n");
+    minCostStrategyLog += QString("%1\n").arg(header);
+    for (int i = 0; i < eventList.size(); i++)
     {
-        qDebug() << eventList[i].eventTime << eventList[i].name() << eventList[i].toString()
-                 << minCostActionList[i].name() << minCostActionList[i].toString()
-                 << minCostRevenueList[i] << minCostCostList[i] << minCostProfitList[i];
+        minCostStrategyLog += QString("%1\t%2\t%3\t")
+                .arg(eventList[i].eventTime).arg(eventList[i].name()).arg(eventList[i].toString());
+        minCostStrategyLog += QString("%1\t%2\t")
+                .arg(minCostActionList[i].name()).arg(minCostActionList[i].toString());
+        minCostStrategyLog += QString("%1\t%2\t%3\n")
+                .arg(minCostRevenueList[i]).arg(minCostCostList[i]).arg(minCostProfitList[i]);
     }
+    currLog.append(minCostStrategyLog);
+    qDebug() << minCostStrategyLog;
     qDebug() << "-------------------------------------------------------------------------------";
-
-
+    // [3] End
+    // [4] 最大利润策略
     BSWorkFlow::Instance()->reset();
     QList<int> maxProfitRevenueList;
     QList<int> maxProfitCostList;
@@ -453,15 +491,29 @@ void BSTest::runTest2()
 
     qDebug() << "-------------------------------------------------------------------------------";
     qDebug() << "Use maxProfit action...";
-    qDebug() << "Time" << "EventType" << "EventDetail" << "ActionType" << "ActionDetail"
-             << "Revenue" << "Cost" << "Profit";
-    for (int i = 0; i < maxProfitProfitList.size(); i++)
+//    qDebug() << "Time" << "EventType" << "EventDetail" << "ActionType" << "ActionDetail"
+//             << "Revenue" << "Cost" << "Profit";
+//    for (int i = 0; i < maxProfitProfitList.size(); i++)
+//    {
+//        qDebug() << eventList[i].eventTime << eventList[i].name() << eventList[i].toString()
+//                 << maxProfitActionList[i].name() << maxProfitActionList[i].toString()
+//                 << maxProfitRevenueList[i] << maxProfitCostList[i] << maxProfitProfitList[i];
+//    }
+    QString maxProfitStrategyLog = QString("最大利润策略(MaxProfit Strategy):\n");
+    maxProfitStrategyLog += QString("%1\n").arg(header);
+    for (int i = 0; i < eventList.size(); i++)
     {
-        qDebug() << eventList[i].eventTime << eventList[i].name() << eventList[i].toString()
-                 << maxProfitActionList[i].name() << maxProfitActionList[i].toString()
-                 << maxProfitRevenueList[i] << maxProfitCostList[i] << maxProfitProfitList[i];
+        maxProfitStrategyLog += QString("%1\t%2\t%3\t")
+                .arg(eventList[i].eventTime).arg(eventList[i].name()).arg(eventList[i].toString());
+        maxProfitStrategyLog += QString("%1\t%2\t")
+                .arg(maxProfitActionList[i].name()).arg(maxProfitActionList[i].toString());
+        maxProfitStrategyLog += QString("%1\t%2\t%3\n")
+                .arg(maxProfitRevenueList[i]).arg(maxProfitCostList[i]).arg(maxProfitProfitList[i]);
     }
+    currLog.append(maxProfitStrategyLog);
+    qDebug() << maxProfitStrategyLog;
     qDebug() << "-------------------------------------------------------------------------------";
+    // [4] End
 
     /*
      * 开始Matlab画图
@@ -811,7 +863,10 @@ void BSTest::saveMatlabCmd()
     QFile outFile("matlab.log");
     outFile.open(QIODevice::WriteOnly | QIODevice::Append);
     QTextStream ts(&outFile);
-    QString str = QString("%1 %2").arg(dateTime).arg(cmd);
+    QString str("======================================================================\n");
+    str += QString("DateTime: %1\nMatlabCmd:\n%2\nLog:\n%3\n")
+            .arg(dateTime).arg(cmd).arg(currLog);
+    str += QString("======================================================================");
     ts << str << endl;
     outFile.close();
 }

@@ -18,6 +18,7 @@ public:
 private:
     Engine *ep;
     QString cmd;
+    QString currLog;
 };
 
 #endif // TEST_H
