@@ -832,6 +832,7 @@ void BSTest::saveMatlabCmd()
 {
     QString dateTime = QDateTime::currentDateTime().toString("yyyy.MM.dd hh:mm:ss");
     QFile outFile("matlab.log");
+    cmd.replace("; ", ";\n");
     outFile.open(QIODevice::WriteOnly | QIODevice::Append);
     QTextStream ts(&outFile);
     QString str("======================================================================\n");
