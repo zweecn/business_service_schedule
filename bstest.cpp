@@ -470,100 +470,6 @@ void BSTest::runTest2()
     char buffer[BUFSIZE] = {'\0'};
     engOutputBuffer(ep, buffer, BUFSIZE);
 
-    double *t = new double[eventList.size()];
-
-    double *revenueIgnore = new double[eventList.size()];
-    double *revenueRandom = new double[eventList.size()];
-    double *revenueMinCost = new double[eventList.size()];
-    double *revenueMaxProfit = new double[eventList.size()];
-
-    double *costIgnore = new double[eventList.size()];
-    double *costRandom = new double[eventList.size()];
-    double *costMinCost = new double[eventList.size()];
-    double *costMaxProfit = new double[eventList.size()];
-
-    double *profitIgnore = new double[eventList.size()];
-    double *profitRandom = new double[eventList.size()];
-    double *profitMinCost = new double[eventList.size()];
-    double *profitMaxProfit = new double[eventList.size()];
-
-    for (int i = 0; i < eventList.size(); i++)
-    {
-        t[i] = eventList[i].eventTime;
-
-        revenueIgnore[i] = ignoreRevenueList[i];
-        revenueRandom[i] = randomRevenueList[i];
-        revenueMinCost[i] = minCostRevenueList[i];
-        revenueMaxProfit[i] = maxProfitRevenueList[i];
-
-        costIgnore[i] = ignoreCostList[i];
-        costRandom[i] = randomCostList[i];
-        costMinCost[i] = minCostCostList[i];
-        costMaxProfit[i] = maxProfitCostList[i];
-
-        profitIgnore[i] = ignoreProfitList[i];
-        profitRandom[i] = randomProfitList[i];
-        profitMinCost[i] = minCostProfitList[i];
-        profitMaxProfit[i] = maxProfitProfitList[i];
-    }
-
-    engEvalString(ep, "clear;");
-
-    mxArray *_t = mxCreateDoubleMatrix(1, eventList.size(), mxREAL);
-    memcpy(mxGetPr(_t), t, eventList.size()*sizeof(double));
-    engPutVariable(ep, "t", _t);
-
-    mxArray *_revenueIgnore = mxCreateDoubleMatrix(1, eventList.size(), mxREAL);
-    memcpy(mxGetPr(_revenueIgnore), revenueIgnore, eventList.size()*sizeof(double));
-    engPutVariable(ep, "revenueIgnore", _revenueIgnore);
-
-    mxArray *_revenueRandom = mxCreateDoubleMatrix(1, eventList.size(), mxREAL);
-    memcpy(mxGetPr(_revenueRandom), revenueRandom, eventList.size()*sizeof(double));
-    engPutVariable(ep, "revenueRandom", _revenueRandom);
-
-    mxArray *_revenueMinCost = mxCreateDoubleMatrix(1, eventList.size(), mxREAL);
-    memcpy(mxGetPr(_revenueMinCost), revenueMinCost, eventList.size()*sizeof(double));
-    engPutVariable(ep, "revenueMinCost", _revenueMinCost);
-
-    mxArray *_revenueMaxProfit = mxCreateDoubleMatrix(1, eventList.size(), mxREAL);
-    memcpy(mxGetPr(_revenueMaxProfit), revenueMaxProfit, eventList.size()*sizeof(double));
-    engPutVariable(ep, "revenueMaxProfit", _revenueMaxProfit);
-
-    mxArray *_costIgnore = mxCreateDoubleMatrix(1, eventList.size(), mxREAL);
-    memcpy(mxGetPr(_costIgnore), costIgnore, eventList.size()*sizeof(double));
-    engPutVariable(ep, "costIgnore", _costIgnore);
-
-    mxArray *_costRandom = mxCreateDoubleMatrix(1, eventList.size(), mxREAL);
-    memcpy(mxGetPr(_costRandom), costRandom, eventList.size()*sizeof(double));
-    engPutVariable(ep, "costRandom", _costRandom);
-
-    mxArray *_costMinCost = mxCreateDoubleMatrix(1, eventList.size(), mxREAL);
-    memcpy(mxGetPr(_costMinCost), costMinCost, eventList.size()*sizeof(double));
-    engPutVariable(ep, "costMinCost", _costMinCost);
-
-    mxArray *_costMaxProfit = mxCreateDoubleMatrix(1, eventList.size(), mxREAL);
-    memcpy(mxGetPr(_costMaxProfit), costMaxProfit, eventList.size()*sizeof(double));
-    engPutVariable(ep, "costMaxProfit", _costMaxProfit);
-
-    mxArray *_profitIgnore = mxCreateDoubleMatrix(1, eventList.size(), mxREAL);
-    memcpy(mxGetPr(_profitIgnore), profitIgnore, eventList.size()*sizeof(double));
-    engPutVariable(ep, "profitIgnore", _profitIgnore);
-
-    mxArray *_profitRandom = mxCreateDoubleMatrix(1, eventList.size(), mxREAL);
-    memcpy(mxGetPr(_profitRandom), profitRandom, eventList.size()*sizeof(double));
-    engPutVariable(ep, "profitRandom", _profitRandom);
-
-    mxArray *_profitMinCost = mxCreateDoubleMatrix(1, eventList.size(), mxREAL);
-    memcpy(mxGetPr(_profitMinCost), profitMinCost, eventList.size()*sizeof(double));
-    engPutVariable(ep, "profitMinCost", _profitMinCost);
-
-    mxArray *_profitMaxProfit = mxCreateDoubleMatrix(1, eventList.size(), mxREAL);
-    memcpy(mxGetPr(_profitMaxProfit), profitMaxProfit, eventList.size()*sizeof(double));
-    engPutVariable(ep, "profitMaxProfit", _profitMaxProfit);
-
-    QString matlabCmd("cd E:\\Dev\\MATLAB7\\work\\business_uc; test2( t,revenueIgnore,revenueRandom,revenueMinCost,revenueMaxProfit,costIgnore,costRandom,costMinCost,costMaxProfit,profitIgnore,profitRandom,profitMinCost,profitMaxProfit );");
-    engEvalString(ep, matlabCmd.toStdString().c_str());
-
     // Make matlab code
     QString tString("t = [");
     QString revenueIgnoreString("revenueIgnore = [");
@@ -581,18 +487,18 @@ void BSTest::runTest2()
     for (int i = 0; i < eventList.size(); i++)
     {
         tString += QString("%1 ").arg(eventList[i].eventTime);
-        revenueIgnoreString += QString("%1 ").arg(revenueIgnore[i]);
-        revenueRandomString += QString("%1 ").arg(revenueRandom[i]);
-        revenueMinCostString += QString("%1 ").arg(revenueMinCost[i]);
-        revenueMaxProfitString += QString("%1 ").arg(revenueMaxProfit[i]);
-        costIgnoreString += QString("%1 ").arg(costIgnore[i]);
-        costRandomString += QString("%1 ").arg(costRandom[i]);
-        costMinCostString += QString("%1 ").arg(costMinCost[i]);
-        costMaxProfitString += QString("%1 ").arg(costMaxProfit[i]);
-        profitIgnoreString += QString("%1 ").arg(profitIgnore[i]);
-        profitRandomString += QString("%1 ").arg(profitRandom[i]);
-        profitMinCostString += QString("%1 ").arg(profitMinCost[i]);
-        profitMaxProfitString += QString("%1 ").arg(profitMaxProfit[i]);
+        revenueIgnoreString += QString("%1 ").arg(ignoreRevenueList[i]);
+        revenueRandomString += QString("%1 ").arg(randomRevenueList[i]);
+        revenueMinCostString += QString("%1 ").arg(minCostRevenueList[i]);
+        revenueMaxProfitString += QString("%1 ").arg(maxProfitRevenueList[i]);
+        costIgnoreString += QString("%1 ").arg(ignoreCostList[i]);
+        costRandomString += QString("%1 ").arg(randomCostList[i]);
+        costMinCostString += QString("%1 ").arg(minCostCostList[i]);
+        costMaxProfitString += QString("%1 ").arg(maxProfitCostList[i]);
+        profitIgnoreString += QString("%1 ").arg(ignoreProfitList[i]);
+        profitRandomString += QString("%1 ").arg(randomProfitList[i]);
+        profitMinCostString += QString("%1 ").arg(minCostProfitList[i]);
+        profitMaxProfitString += QString("%1 ").arg(maxProfitProfitList[i]);
     }
     tString = tString.trimmed() + "]; ";
     revenueIgnoreString = revenueIgnoreString.trimmed() + "]; ";
@@ -608,7 +514,10 @@ void BSTest::runTest2()
     profitMinCostString = profitMinCostString.trimmed() + "]; ";
     profitMaxProfitString = profitMaxProfitString.trimmed() + "]; ";
 
-    QString matlabCode = tString
+    QString matlabCmd1("clear all; cd E:\\Dev\\MATLAB7\\work\\business_uc; ");
+    QString matlabCmd2("test2( t,revenueIgnore,revenueRandom,revenueMinCost,revenueMaxProfit,costIgnore,costRandom,costMinCost,costMaxProfit,profitIgnore,profitRandom,profitMinCost,profitMaxProfit );");
+    QString matlabCode = matlabCmd1
+                 + tString
                  + revenueIgnoreString
                  + revenueRandomString
                  + revenueMinCostString
@@ -621,41 +530,11 @@ void BSTest::runTest2()
                  + profitRandomString
                  + profitMinCostString
                  + profitMaxProfitString
-                 + matlabCmd;
+                 + matlabCmd2;
+
     qDebug() << "Matlab code: " << matlabCode;
     this->cmd = matlabCode;
-
-    // Destory val
-    mxDestroyArray(_t);
-    mxDestroyArray(_revenueIgnore);
-    mxDestroyArray(_revenueRandom);
-    mxDestroyArray(_revenueMinCost);
-    mxDestroyArray(_revenueMaxProfit);
-    mxDestroyArray(_costIgnore);
-    mxDestroyArray(_costRandom);
-    mxDestroyArray(_costMinCost);
-    mxDestroyArray(_costMaxProfit);
-    mxDestroyArray(_profitIgnore);
-    mxDestroyArray(_profitRandom);
-    mxDestroyArray(_profitMinCost);
-    mxDestroyArray(_profitMaxProfit);
-
-    delete[] t;
-
-    delete[] revenueIgnore;
-    delete[] revenueRandom;
-    delete[] revenueMinCost;
-    delete[] revenueMaxProfit;
-
-    delete[] costIgnore;
-    delete[] costRandom;
-    delete[] costMinCost;
-    delete[] costMaxProfit;
-
-    delete[] profitIgnore;
-    delete[] profitRandom;
-    delete[] profitMinCost;
-    delete[] profitMaxProfit;
+    engEvalString(ep, matlabCode.toStdString().c_str());
 
     qDebug() << "BSTest::runTest2() Finished." << __FILE__ << __LINE__;
     qDebug() << "====================================================================";
